@@ -9,7 +9,7 @@ var i18n = require('i18n');
 var logger = require('./lib/services/logger');
 
 var routes = require('./routes/index');
-var users = require('./routes/users');
+var configuration = require('./routes/configuration');
 
 var app = express();
 
@@ -28,7 +28,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/bower', express.static(path.join(__dirname , '/bower_components')));
 
 app.use('/', routes);
-app.use('/users', users);
+app.use('/configuration', configuration);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

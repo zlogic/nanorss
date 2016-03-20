@@ -1,0 +1,10 @@
+{
+	"Not Found": "Not Found",
+	"An error has occurred: %s, status %s, stack trace:\n%s": "An error has occurred: %s, status %s, stack trace:\n%s",
+	"nanoRSS configuration": "nanoRSS configuration",
+	"Welcome to %s": "Welcome to %s",
+	"OPML": "OPML",
+	"Submit": "Submit",
+	"Page Monitor": "Page Monitor",
+	"nanoRSS": "nanoRSS"
+}
