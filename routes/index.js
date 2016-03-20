@@ -7,7 +7,6 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  var items = [];
   var processPagemonitorData = function(){
     return persistence.getUserData().then(function(user){
       return new Promise(function(resolve, reject){
@@ -20,7 +19,7 @@ router.get('/', function(req, res, next) {
             });
           };
           persistence.getPageMonitorItems().then(function(monitoredPages){
-            var returnItems = monitoredPages.map(function(page){
+            var monitoredPagesItems = monitoredPages.map(function(page){
               var pageMonitorConfiguration = findPageMonitorConfiguration(page.url);
               var pageTitle = (pageMonitorConfiguration !== undefined )? pageMonitorConfiguration._ : undefined;
               return {
@@ -30,16 +29,20 @@ router.get('/', function(req, res, next) {
                 url: page.url
               };
             });
-            items = items.concat(returnItems);
-            resolve(returnItems);
+            resolve(monitoredPagesItems);
           });
         });
       });
     });
   };
-  processPagemonitorData().then(function(){
+  var items = [];
+  processPagemonitorData().then(function(newItems){
+    items = items.concat(newItems);
+    items.sort(function(a, b){
+      return a.date.getTime() - b.date.getTime();
+    })
     res.render('index', {
-    title: i18n.__('nanoRSS'),
+      title: i18n.__('nanoRSS'),
       items: items
     });
   }).catch(next);

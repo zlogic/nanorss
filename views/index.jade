@@ -6,4 +6,5 @@ block content
   each page in items
     p
       a(href=page.url)= page.title
+    p #{__('Updated: %s', page.date.toString())}
     p !{page.contents}

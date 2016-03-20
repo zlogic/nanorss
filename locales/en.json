@@ -8,5 +8,6 @@
 	"Fetching page %s": "Fetching page %s",
 	"nanoRSS": "nanoRSS",
 	"Monitored pages": "Monitored pages",
-	"Items": "Items"
+	"Items": "Items",
+	"Updated: %s": "Updated: %s"
 }
