@@ -16,8 +16,7 @@ if(!allowModifications()) {
 
 /* GET user data. */
 router.get('/', function(req, res, next) {
-  var username = "default";
-  persistence.getUserData(username).then(function(user){
+  persistence.getUserData().then(function(user){
     res.render('configuration', {
       title: i18n.__('nanoRSS configuration'),
       opml: user.opml,
@@ -29,9 +28,7 @@ router.get('/', function(req, res, next) {
 
 /* POST user data. */
 router.post('/', function(req, res, next) {
-  var username = "default";
-  persistence.getUserData(username).then(function(user){
-    console.log(req.body);
+  persistence.getUserData().then(function(user){
     for(var v in req.body)
       user.set(v, req.body[v]);
     return user.save();

@@ -2,4 +2,8 @@ extends layout
 
 block content
   h1= title
-  p #{__('Welcome to %s', title)}
+  h2 #{__('Items')}
+  each page in items
+    p
+      a(href=page.url)= page.title
+    p !{page.contents}

@@ -39,6 +39,7 @@ app.use(function(req, res, next) {
 
 // i18n
 require('./lib/services/i18nconfiguration');
+app.locals.__= i18n.__;
 
 // error handlers
 
