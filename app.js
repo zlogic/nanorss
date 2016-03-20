@@ -38,12 +38,7 @@ app.use(function(req, res, next) {
 });
 
 // i18n
-i18n.configure({
-  locales: ['en'],
-  directory: __dirname + '/locales'
-});
-app.use(i18n.init);
-app.locals.__= i18n.__;
+require('./lib/services/i18nconfiguration');
 
 // error handlers
 
