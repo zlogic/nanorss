@@ -4,7 +4,8 @@ block content
   h1= title
   h2 #{__('Items')}
   each page in items
-    p
-      a(href=page.url)= page.title
-    p #{__('Updated: %s', page.date.toString())}
-    p !{page.contents}
+    div
+      h3
+        a(href=page.url)= page.title
+      p #{__('Updated: %s', page.date.toString())}
+      p !{page.contents}

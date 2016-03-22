@@ -5,6 +5,7 @@ var feed = require('../lib/feed/fetcher');
 var persistence = require('../lib/services/persistence');
 
 require('../lib/services/i18nconfiguration');
+require('../lib/services/needleconfiguration');
 
 persistence.init().then(function() {
   var update = function(){
