@@ -32,8 +32,12 @@ router.post('/', function(req, res, next) {
     for(var v in req.body)
       user.set(v, req.body[v]);
     return user.save();
-  }).then(function(){
-    res.redirect(req.baseUrl);
+  }).then(function(user){
+    res.render('configuration', {
+      title: i18n.__('nanoRSS configuration'),
+      opml: user.opml,
+      pagemonitor: user.pagemonitor
+    });
   }).catch(next);
 });
 

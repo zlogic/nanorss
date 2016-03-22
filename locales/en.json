@@ -9,5 +9,9 @@
 	"nanoRSS": "nanoRSS",
 	"Monitored pages": "Monitored pages",
 	"Items": "Items",
+	"Fetching feed %s": "Fetching feed %s",
+	"Error fetching feed %s": "Error fetching feed %s",
+	"Cannot parse feed:\n%s": "Cannot parse feed:\n%s",
+	"Error parsing feed %s": "Error parsing feed %s",
 	"Updated: %s": "Updated: %s"
 }

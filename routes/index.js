@@ -12,7 +12,7 @@ router.get('/', function(req, res, next) {
       return new Promise(function(resolve, reject){
         pagemonitorConfiguration.configXml(user.pagemonitor, function(err, pagemonitorconfiguration){
           if(err)
-            return reject(err)
+            return reject(err);
           var findPageMonitorConfiguration = function(url){
             return pagemonitorconfiguration.pages.page.find(function(page){
               return page.$.url === url;
@@ -29,17 +29,32 @@ router.get('/', function(req, res, next) {
                 url: page.url
               };
             });
-            resolve(monitoredPagesItems);
-          });
+            return resolve(monitoredPagesItems);
+          }).catch(reject);
         });
       });
+    });
+  };
+  var processFeedData = function(){
+    return persistence.getFeedItems().then(function(feedItems){
+      return feedItems.map(function(feedItem){
+        return {
+          date: feedItem.date,
+          title: feedItem.title,
+          contents: feedItem.contents,
+          url: feedItem.url
+        };
+      })
     });
   };
   var items = [];
   processPagemonitorData().then(function(newItems){
     items = items.concat(newItems);
+    return processFeedData();
+  }).then(function(newItems){
+    items = items.concat(newItems);
     items.sort(function(a, b){
-      return a.date.getTime() - b.date.getTime();
+      return b.date.getTime() - a.date.getTime();
     })
     res.render('index', {
       title: i18n.__('nanoRSS'),
