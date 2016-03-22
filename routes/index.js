@@ -23,7 +23,8 @@ router.get('/', function(req, res, next) {
               var pageMonitorConfiguration = findPageMonitorConfiguration(page.url);
               var pageTitle = (pageMonitorConfiguration !== undefined )? pageMonitorConfiguration._ : undefined;
               return {
-                date: page.updated,
+                date: page.updatedAt,
+                sortBy: new Date(page.updatedAt).getTime(),
                 title: pageTitle,
                 contents: page.delta.replace(/\n/g, '<br>\n'),
                 url: page.url
@@ -40,6 +41,7 @@ router.get('/', function(req, res, next) {
       return feedItems.map(function(feedItem){
         return {
           date: feedItem.date,
+          sortBy: Math.min(new Date(feedItem.createdAt).getTime(), new Date(feedItem.date).getTime()),
           title: feedItem.title,
           contents: feedItem.contents,
           url: feedItem.url
@@ -54,7 +56,7 @@ router.get('/', function(req, res, next) {
   }).then(function(newItems){
     items = items.concat(newItems);
     items.sort(function(a, b){
-      return b.date.getTime() - a.date.getTime();
+      return b.sortBy - a.sortBy;
     })
     res.render('index', {
       title: i18n.__('nanoRSS'),
