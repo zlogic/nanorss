@@ -23,11 +23,10 @@ router.get('/', function(req, res, next) {
             var pageMonitorConfiguration = findPageMonitorConfiguration(page.url);
             var pageTitle = (pageMonitorConfiguration !== undefined )? pageMonitorConfiguration._ : undefined;
             return {
-              date: page.updatedAt,
               sortBy: new Date(page.updatedAt).getTime(),
               title: pageTitle,
               origin: pageTitle,
-              contents: page.delta.replace(/\n/g, '<br>\n'),
+              fetchUrl: 'pagemonitor/' + encodeURIComponent(page.url),
               url: page.url
             };
           });
@@ -45,11 +44,10 @@ router.get('/', function(req, res, next) {
             if(feedName === undefined)
               return undefined;
             return {
-              date: feedItem.date,
               sortBy: Math.min(new Date(feedItem.createdAt).getTime(), new Date(feedItem.date).getTime()),
               title: feedItem.title,
               origin: feedName,
-              contents: feedItem.contents,
+              fetchUrl: 'feeditem/' + feedItem.id,
               url: feedItem.url
             };
           }).filter(function(feedItem){ return feedItem !== undefined;});
@@ -68,6 +66,41 @@ router.get('/', function(req, res, next) {
         title: i18n.__('nanoRSS'),
         items: items
       });
+    });
+  }).catch(next);
+});
+
+/* GET feed item. */
+router.get('/feeditem/:id', function(req, res, next) {
+  var id = req.params.id;
+  persistence.findFeedItem(id).then(function(feedItem){
+    if(feedItem === null)
+      return next(new Error(i18n.__('Item %s not found', id)));
+
+    res.render('item', {
+      item: {
+        date: feedItem.date,
+        contents: feedItem.contents,
+        url: feedItem.url
+      }
+    });
+  }).catch(next);
+});
+
+/* GET monitored page. */
+router.get('/pagemonitor/:id', function(req, res, next) {
+  var id = req.params.id;
+  console.log(id)
+  persistence.findPageMonitorItem(id).then(function(page){
+    if(page === null)
+      return next(new Error(i18n.__('Item %s not found', id)));
+
+    res.render('item', {
+      item: {
+        date: page.updatedAt,
+        contents: page.delta.replace(/\n/g, '<br>\n'),
+        url: page.url
+      }
     });
   }).catch(next);
 });

@@ -8,10 +8,4 @@ block content
       h3
         a(href="#item-"+index, data-toggle="collapse")
           | #{page.title} / #{page.origin}
-      div(id="item-"+index, class="collapse")
-        div(class="panel panel-default")
-          div(class="panel-body")
-            p #{__('Updated: %s', page.date.toString())}
-            p
-              a(href=page.url) Open link
-            | !{page.contents}
+      div(id="item-"+index, class="collapse", data-fetchurl=page.fetchUrl)

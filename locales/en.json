@@ -15,5 +15,7 @@
 	"Error parsing feed %s": "Error parsing feed %s",
 	"Updated: %s": "Updated: %s",
 	"Configuration is undefined": "Configuration is undefined",
-	"Update completed": "Update completed"
+	"Update completed": "Update completed",
+	"Item %s not found": "Item %s not found",
+	"Go to site": "Go to site"
 }
