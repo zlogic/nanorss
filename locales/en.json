@@ -14,5 +14,6 @@
 	"Cannot parse feed:\n%s": "Cannot parse feed:\n%s",
 	"Error parsing feed %s": "Error parsing feed %s",
 	"Updated: %s": "Updated: %s",
-	"Configuration is undefined": "Configuration is undefined"
+	"Configuration is undefined": "Configuration is undefined",
+	"Update completed": "Update completed"
 }

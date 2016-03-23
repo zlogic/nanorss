@@ -10,7 +10,7 @@ var router = express.Router();
 router.get('/', function(req, res, next) {
   persistence.getUserData().then(function(user){
     var processPagemonitorData = new Promise(function(resolve, reject){
-      pagemonitorConfiguration.configXml(user.pagemonitor, function(err, pagemonitorconfiguration){
+      pagemonitorConfiguration.parseConfig(user.pagemonitor, function(err, pagemonitorconfiguration){
         if(err)
           return reject(err);
         var findPageMonitorConfiguration = function(url){
@@ -36,7 +36,7 @@ router.get('/', function(req, res, next) {
       });
     });
     var processFeedData = new Promise(function(resolve, reject){
-      feedConfiguration.configXmlUrlNames(user.opml, function(err, feedNames){
+      feedConfiguration.parseGetUrlNames(user.opml, function(err, feedNames){
         if(err)
           return reject(err);
         persistence.getFeedItems().then(function(feedItems){
