@@ -3,10 +3,15 @@ extends layout
 block content
   h1= title
   h2 #{__('Items')}
-  each page in items
+  each page, index in items
     div
       h3
-        a(href=page.url)
+        a(href="#item-"+index, data-toggle="collapse")
           | #{page.title} / #{page.origin}
-      p #{__('Updated: %s', page.date.toString())}
-      p !{page.contents}
+      div(id="item-"+index, class="collapse")
+        div(class="panel panel-default")
+          div(class="panel-body")
+            p #{__('Updated: %s', page.date.toString())}
+            p
+              a(href=page.url) Open link
+            | !{page.contents}
