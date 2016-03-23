@@ -6,6 +6,7 @@ block content
   each page in items
     div
       h3
-        a(href=page.url)= page.title
+        a(href=page.url)
+          | #{page.title} / #{page.origin}
       p #{__('Updated: %s', page.date.toString())}
       p !{page.contents}
