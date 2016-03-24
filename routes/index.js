@@ -90,7 +90,6 @@ router.get('/feeditem/:id', function(req, res, next) {
 /* GET monitored page. */
 router.get('/pagemonitor/:id', function(req, res, next) {
   var id = req.params.id;
-  console.log(id)
   persistence.findPageMonitorItem(id).then(function(page){
     if(page === null)
       return next(new Error(i18n.__('Item %s not found', id)));
