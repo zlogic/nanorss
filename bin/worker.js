@@ -12,10 +12,18 @@ require('../lib/services/needleconfiguration');
 
 persistence.init().then(function() {
   var update = function(){
-    Promise.all([pagemonitor.update(),feed.update()]).then(function(){
+    return Promise.all([pagemonitor.update(),feed.update()]).then(function(){
       logger.info(i18n.__("Update completed"));
     })
   };
-  update();
-  setInterval(update, 15 * 60 * 1000);
+  var cleanup = function(){
+    return Promise.all([pagemonitor.cleanup(),feed.cleanup()]).then(function(){
+      logger.info(i18n.__("Cleanup completed"));
+    })
+  };
+  var runTasks = function(){
+    return update().then(cleanup);
+  };
+  runTasks();
+  setInterval(runTasks, 15 * 60 * 1000);
 });

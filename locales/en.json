@@ -18,5 +18,6 @@
 	"Update completed": "Update completed",
 	"Item %s not found": "Item %s not found",
 	"Go to site": "Go to site",
-	"Error when fetching page: %s": "Error when fetching page: %s"
+	"Error when fetching page: %s": "Error when fetching page: %s",
+	"Cleanup completed": "Cleanup completed"
 }
