@@ -6,6 +6,7 @@
     "start": "node ./bin/www",
     "nodemon": "nodemon ./bin/www",
     "postinstall": "bower install",
+    "test": "mocha test/*.js",
     "worker": "node ./bin/worker.js"
   },
   "dependencies": {
@@ -30,6 +31,7 @@
     "xml2js": "~0.4.16"
   },
   "devDependencies": {
+    "mocha": "~2.5.3",
     "nodemon": "~1.9.2"
   },
   "engines": {
