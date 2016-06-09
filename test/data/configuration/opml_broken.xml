@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="1.0">
+  <head>
+    <title>My OPML list</title>
+  </head>
+  <body>
+    <outline text="Sites" title="Sites">
+      <outline text="Site 1" title="Site 1" type="rss" xmlUrl="http://sites-site1.com" htmlUrl="http://sites-site1.com"/>
+    </outline>
+    <outline text="Updates" title="Updates">
+      <outline text="Site 2" title="Site 2" type="rss" xmlUrl="http://updates-site2.com" htmlUrl="http://updates-site2.com"/>
+      <outline text="Site 3" title="Site 3" type="rss" xmlUrl="http://updates-site3.com" htmlUrl="http://updates-site3.com"/>
+    </outline>
+  </body>
