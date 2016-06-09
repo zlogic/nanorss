@@ -1,16 +1,12 @@
 var fs = require('fs');
 var assert = require('assert');
 
+require('./utils/dbconfiguration.js');
 var persistence = require('../lib/services/persistence');
-var dbConfiguration = require('./utils/dbconfiguration.js');
 var logger = require('../lib/services/logger').logger;
 require('./utils/logging');
 
 describe('Persistence', function() {
-  before(function() {
-    dbConfiguration.reconfigureDb();
-  });
-
   beforeEach(function(done) {
     logger.info(this.currentTest.fullTitle());
     return persistence.init({force: true}).then(function(task){
