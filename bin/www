@@ -8,6 +8,7 @@ var app = require('../app');
 var debug = require('debug')('nanorss:server');
 var http = require('http');
 var persistence = require('../lib/services/persistence');
+var maintenanceworker = require('../lib/services/maintenanceworker');
 
 /**
  * Get port from environment and store in Express.
@@ -30,6 +31,8 @@ persistence.init().then(function () {
   server.listen(port);
   server.on('error', onError);
   server.on('listening', onListening);
+  // start maintenance worker
+  maintenanceworker.startWorker();
 });
 
 /**
