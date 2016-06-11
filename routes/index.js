@@ -26,7 +26,7 @@ router.get('/', function(req, res, next) {
               sortBy: new Date(page.updatedAt).getTime(),
               title: pageTitle,
               origin: pageTitle,
-              fetchUrl: 'pagemonitor/' + encodeURIComponent(page.url),
+              fetchUrl: 'pagemonitor/' + encodeURIComponent(page.id),
               url: page.url
             };
           });

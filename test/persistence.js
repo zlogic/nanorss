@@ -57,6 +57,7 @@ describe('Persistence', function() {
         assert.equal(pageMonitorItem.updatedAt <= endDate, true);
         delete pageMonitorItem.createdAt;
         delete pageMonitorItem.updatedAt;
+        delete pageMonitorItem.id;
         assert.deepEqual(pageMonitorItem, savePageMonitorItem);
         done();
       }).catch(done);
@@ -80,6 +81,7 @@ describe('Persistence', function() {
           assert.equal(pageMonitorItem.updatedAt <= endDate, true);
           delete pageMonitorItem.createdAt;
           delete pageMonitorItem.updatedAt;
+          delete pageMonitorItem.id;
           return pageMonitorItem;
         });
         assert.deepEqual(pageMonitorItems, savePageMonitorItems);
@@ -107,6 +109,7 @@ describe('Persistence', function() {
           assert.equal(pageMonitorItem.updatedAt <= endDate, true);
           delete pageMonitorItem.createdAt;
           delete pageMonitorItem.updatedAt;
+          delete pageMonitorItem.id;
           return pageMonitorItem;
         });
         assert.deepEqual(pageMonitorItems, savePageMonitorItems);
@@ -127,6 +130,7 @@ describe('Persistence', function() {
           assert.equal(pageMonitorItem.updatedAt <= (pageMonitorItem.url === 'http://item1' ? updateEndDate : endDate), true);
           delete pageMonitorItem.createdAt;
           delete pageMonitorItem.updatedAt;
+          delete pageMonitorItem.id;
           return pageMonitorItem;
         });
         assert.deepEqual(pageMonitorItems, savePageMonitorItems);
@@ -141,7 +145,7 @@ describe('Persistence', function() {
         return persistence.savePageMonitorItem(savePageMonitorItem);
       })).then(function() {
         endDate = new Date();
-        return persistence.findPageMonitorItem('http://item1');
+        return persistence.findPageMonitorItem('http://item1', 'url');
       }).then(function(pageMonitorItem) {
         var endDate = new Date();
         pageMonitorItem = pageMonitorItem.toJSON();
@@ -151,6 +155,7 @@ describe('Persistence', function() {
         assert.equal(pageMonitorItem.updatedAt <= endDate, true);
         delete pageMonitorItem.createdAt;
         delete pageMonitorItem.updatedAt;
+        delete pageMonitorItem.id;
         assert.deepEqual(pageMonitorItem, savePageMonitorItems[0]);
         done();
       }).catch(done);
@@ -160,7 +165,7 @@ describe('Persistence', function() {
       return Promise.all(savePageMonitorItems.map(function(savePageMonitorItem){
         return persistence.savePageMonitorItem(savePageMonitorItem);
       })).then(function() {
-        return persistence.findPageMonitorItem('http://item3');
+        return persistence.findPageMonitorItem('http://item3', 'url');
       }).then(function(pageMonitorItem) {
         assert.equal(pageMonitorItem, null);
         done();

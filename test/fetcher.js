@@ -27,18 +27,6 @@ describe('Fetcher', function() {
     });
   });
   describe('pagemonitor', function() {
-    var setConfig = function(configFile) {
-      return new Promise(function(resolve, reject){
-        fs.readFile(configFile, function(error, data){
-          if(error) return reject(error);
-          return persistence.getUserData().then(function(user){
-            user.pagemonitor = data;
-            return user.save();
-          }).then(resolve, reject);
-        });
-      });
-    };
-
     it('should poll newly added pages', function (done) {
       //this.timeout(60000);
       var config;
