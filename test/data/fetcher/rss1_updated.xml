@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+<channel>
+<pubDate>Wed, 08 Jun 2016 10:34:00 GMT</pubDate>
+<item>
+<title>Title 2 (updated)</title>
+<link>http://site1/link2</link>
+<description>Text 2</description>
+<guid>Item@2</guid>
+</item>
+<item>
+<title>Title 3</title>
+<link>http://site1/link3-updated</link>
+<description>Text 3</description>
+<pubDate>Tue, 07 Jun 2016 13:19:00 GMT</pubDate>
+</item>
+<item>
+<title>Title 4</title>
+<link>http://site1/link4</link>
+<description>Text 4</description>
+<content:encoded>Content 4 (updated)</content:encoded>
+<pubDate>Wed, 08 Jun 2016 10:34:00 GMT</pubDate>
+<guid>Item@4</guid>
+</item>
+<item>
+<title>Title 5</title>
+<link>http://site1/link5</link>
+<description>Text 5</description>
+<pubDate>Sat, 11 Jun 2016 10:34:00 GMT</pubDate>
+<guid>Item@5</guid>
+</item>
+</channel>
+</rss>

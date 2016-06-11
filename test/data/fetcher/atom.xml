@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+<entry>
+<title>Title 1</title>
+<link rel="alternate" type="text/html" href="http://site1/link1-good"/>
+<link href="http://site1/link1" />
+<link rel="edit" href="http://site1/link1"/>
+<guid>Item@1</guid>
+<updated>2003-12-13T18:30:02Z</updated>
+<summary>Summary 1</summary>
+<content type="xhtml">
+<div xmlns="http://www.w3.org/1999/xhtml">
+<p>Content 1</p>
+</div>
+</content>
+</entry>
+<entry>
+<title>Title 2</title>
+<link rel="alternate" href="http://site1/link2-good"/>
+<link href="http://site1/link2" />
+<updated>2003-12-14T18:30:02Z</updated>
+<summary>Summary 1</summary>
+<content type="xhtml">
+<div xmlns="http://www.w3.org/1999/xhtml">
+<p>Content 1</p>
+</div>
+</content>
+</entry>
+<entry>
+<title>Title 3</title>
+<link type="text/html" href="http://site1/link3-good"/>
+<link href="http://site1/link3" />
+<guid>Item@3</guid>
+<summary>Summary 1</summary>
+<content type="xhtml">
+<div xmlns="http://www.w3.org/1999/xhtml">
+<p>Content 1</p>
+</div>
+</content>
+</entry>
+</feed>

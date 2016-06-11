@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+<channel>
+<pubDate>Wed, 08 Jun 2016 10:34:00 GMT</pubDate>
+<item>
+<title>Title 1</title>
+<link>http://site2/link1</link>
+<description>Text 1</description>
+<pubDate>Fri, 10 Jun 2016 10:34:00 GMT</pubDate>
+<guid>Item@1</guid>
+</item>
+</channel>
+</rss>
