@@ -8,11 +8,15 @@ var bodyParser = require('body-parser');
 var i18n = require('i18n');
 
 var logger = require('./lib/services/logger');
+var ssl = require('./lib/services/ssl');
 
 var routes = require('./routes/index');
 var configuration = require('./routes/configuration');
 
 var app = express();
+
+// ssl
+app.use(ssl.enforceSSL);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
