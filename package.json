@@ -15,11 +15,11 @@
     "compression": "~1.6.2",
     "cookie-parser": "~1.4.3",
     "debug": "~2.2.0",
+    "diff": "~2.2.3",
     "express": "~4.13.4",
     "html-to-text": "~2.1.0",
     "i18n": "~0.8.2",
     "jade": "~1.11.0",
-    "jsondiffpatch": "~0.1.43",
     "morgan": "~1.7.0",
     "needle": "~1.0.0",
     "pg": "~4.5.6",
@@ -32,6 +32,7 @@
   },
   "devDependencies": {
     "mocha": "~2.5.3",
+    "nock": "~8.0.0",
     "nodemon": "~1.9.2"
   },
   "engines": {
