@@ -1,4 +1,5 @@
 var fs = require('fs');
+var path = require('path');
 var assert = require('assert');
 var nock = require('nock');
 
@@ -13,7 +14,7 @@ var i18n = require('i18n');
 
 var loadFile = function(filename) {
   return new Promise(function(resolve, reject){
-    fs.readFile(filename, function(error, data){
+    fs.readFile(path.join(__dirname, 'data', 'fetcher', filename), function(error, data){
       if(error) return reject(error);
       resolve(data);
     });
@@ -32,8 +33,8 @@ describe('Fetcher', function() {
       //this.timeout(60000);
       var config;
       var pages = [
-        {url: 'https://site1.com', file: './test/data/fetcher/page1.html'},
-        {url: 'http://site2.com', file: './test/data/fetcher/page2.txt'}
+        {url: 'https://site1.com', file: 'page1.html'},
+        {url: 'http://site2.com', file: 'page2.txt'}
       ];
       var startDate, endDate;
       return Promise.all(pages.map(function(page) {
@@ -42,7 +43,7 @@ describe('Fetcher', function() {
         pages.forEach(function(page, i) {
           nock(page.url).get('/').once().reply(200, pageFiles[i]);
         });
-        return loadFile('./test/data/fetcher/pagemonitor.xml');
+        return loadFile('pagemonitor.xml');
       }).then(function(data) {
         config = data;
         return persistence.getUserData();
@@ -77,10 +78,10 @@ describe('Fetcher', function() {
     it('should handle updates with changes in unmonitored sections', function (done) {
       var config;
       var pages = [
-        {url: 'https://site1.com', file: './test/data/fetcher/page1.html'},
-        {url: 'http://site2.com', file: './test/data/fetcher/page2.txt'},
-        {url: 'https://site1.com', file: './test/data/fetcher/page1_update_unmonitored.html'},
-        {url: 'http://site2.com', file: './test/data/fetcher/page2.txt'}
+        {url: 'https://site1.com', file: 'page1.html'},
+        {url: 'http://site2.com', file: 'page2.txt'},
+        {url: 'https://site1.com', file: 'page1_update_unmonitored.html'},
+        {url: 'http://site2.com', file: 'page2.txt'}
       ];
       var startDate, secondPollDate, endDate;
       return Promise.all(pages.map(function(page) {
@@ -89,7 +90,7 @@ describe('Fetcher', function() {
         pages.forEach(function(page, i) {
           nock(page.url).get('/').once().reply(200, pageFiles[i]);
         });
-        return loadFile('./test/data/fetcher/pagemonitor.xml');
+        return loadFile('pagemonitor.xml');
       }).then(function(data) {
         config = data;
         return persistence.getUserData();
@@ -126,10 +127,10 @@ describe('Fetcher', function() {
     it('should handle updates with changes in monitored sections', function (done) {
       var config;
       var pages = [
-        {url: 'https://site1.com', file: './test/data/fetcher/page1.html'},
-        {url: 'http://site2.com', file: './test/data/fetcher/page2.txt'},
-        {url: 'https://site1.com', file: './test/data/fetcher/page1_update_monitored.html'},
-        {url: 'http://site2.com', file: './test/data/fetcher/page2.txt'}
+        {url: 'https://site1.com', file: 'page1.html'},
+        {url: 'http://site2.com', file: 'page2.txt'},
+        {url: 'https://site1.com', file: 'page1_update_monitored.html'},
+        {url: 'http://site2.com', file: 'page2.txt'}
       ];
       var startDate, secondPollDate, endDate;
       return Promise.all(pages.map(function(page) {
@@ -138,7 +139,7 @@ describe('Fetcher', function() {
         pages.forEach(function(page, i) {
           nock(page.url).get('/').once().reply(200, pageFiles[i]);
         });
-        return loadFile('./test/data/fetcher/pagemonitor.xml');
+        return loadFile('pagemonitor.xml');
       }).then(function(data) {
         config = data;
         return persistence.getUserData();
@@ -175,8 +176,8 @@ describe('Fetcher', function() {
     it('should handle connection failures when polling a page', function (done) {
       var config;
       var pages = [
-        {url: 'https://site1.com', file: './test/data/fetcher/page1.html'},
-        {url: 'http://site2.com', file: './test/data/fetcher/page2.txt'}
+        {url: 'https://site1.com', file: 'page1.html'},
+        {url: 'http://site2.com', file: 'page2.txt'}
       ];
       var startDate, failPollStartDate, failPollEndDate, finalPollStartDate, endDate;
       var errorMessage = i18n.__('Error when fetching page: %s', 'Access denied');
@@ -191,7 +192,7 @@ describe('Fetcher', function() {
         pages.forEach(function(page, i) {
           nock(page.url).get('/').once().reply(200, pageFiles[i]);
         });
-        return loadFile('./test/data/fetcher/pagemonitor.xml');
+        return loadFile('pagemonitor.xml');
       }).then(function(data) {
         config = data;
         return persistence.getUserData();
@@ -243,8 +244,8 @@ describe('Fetcher', function() {
     it('should poll newly added RSS feeds', function (done) {
       var config;
       var feedFiles = [
-        {url: 'http://sites-site1.com', file: './test/data/fetcher/rss1.xml'},
-        {url: 'http://updates-site2.com', file: './test/data/fetcher/rss2.xml'}
+        {url: 'http://sites-site1.com', file: 'rss1.xml'},
+        {url: 'http://updates-site2.com', file: 'rss2.xml'}
       ];
       var startDate, endDate;
       return Promise.all(feedFiles.map(function(feedFile) {
@@ -253,7 +254,7 @@ describe('Fetcher', function() {
         feedFiles.forEach(function(feedFile, i) {
           nock(feedFile.url).get('/').once().reply(200, loadedFiles[i]);
         });
-        return loadFile('./test/data/fetcher/opml_two.xml');
+        return loadFile('opml_two.xml');
       }).then(function(data) {
         config = data;
         return persistence.getUserData();
@@ -309,9 +310,9 @@ describe('Fetcher', function() {
     it('should poll newly added Atom feeds', function (done) {
       var config;
       var startDate, endDate;
-      return loadFile('./test/data/fetcher/atom.xml').then(function(loadedFile) {
+      return loadFile('atom.xml').then(function(loadedFile) {
         nock('http://sites-site1.com').get('/').once().reply(200, loadedFile);
-        return loadFile('./test/data/fetcher/opml_one.xml');
+        return loadFile('opml_one.xml');
       }).then(function(data) {
         config = data;
         return persistence.getUserData();
@@ -362,9 +363,9 @@ describe('Fetcher', function() {
     it('should poll newly added RDF feeds', function (done) {
       var config;
       var startDate, endDate;
-      return loadFile('./test/data/fetcher/rdf.xml').then(function(loadedFile) {
+      return loadFile('rdf.xml').then(function(loadedFile) {
         nock('http://sites-site1.com').get('/').once().reply(200, loadedFile);
-        return loadFile('./test/data/fetcher/opml_one.xml');
+        return loadFile('opml_one.xml');
       }).then(function(data) {
         config = data;
         return persistence.getUserData();
@@ -407,10 +408,10 @@ describe('Fetcher', function() {
     it('should handle updates to RSS feeds', function (done) {
       var config;
       var feedFiles = [
-        {url: 'http://sites-site1.com', file: './test/data/fetcher/rss1.xml'},
-        {url: 'http://updates-site2.com', file: './test/data/fetcher/rss2.xml'},
-        {url: 'http://sites-site1.com', file: './test/data/fetcher/rss1_updated.xml'},
-        {url: 'http://updates-site2.com', file: './test/data/fetcher/rss2.xml'}
+        {url: 'http://sites-site1.com', file: 'rss1.xml'},
+        {url: 'http://updates-site2.com', file: 'rss2.xml'},
+        {url: 'http://sites-site1.com', file: 'rss1_updated.xml'},
+        {url: 'http://updates-site2.com', file: 'rss2.xml'}
       ];
       var notUpdatedLinks = ['http://site1/link1', 'http://site1/link3', 'http://site2/link1'];
       var newItems = ['http://site1/link3-updated', 'http://site1/link5'];
@@ -421,7 +422,7 @@ describe('Fetcher', function() {
         feedFiles.forEach(function(feedFile, i) {
           nock(feedFile.url).get('/').once().reply(200, loadedFiles[i]);
         });
-        return loadFile('./test/data/fetcher/opml_two.xml');
+        return loadFile('opml_two.xml');
       }).then(function(data) {
         config = data;
         return persistence.getUserData();
@@ -488,8 +489,8 @@ describe('Fetcher', function() {
     it('should handle connection failures when polling an RSS feed', function (done) {
       var config;
       var feedFiles = [
-        {url: 'http://sites-site1.com', file: './test/data/fetcher/rss1.xml'},
-        {url: 'http://updates-site2.com', file: './test/data/fetcher/rss2.xml'}
+        {url: 'http://sites-site1.com', file: 'rss1.xml'},
+        {url: 'http://updates-site2.com', file: 'rss2.xml'}
       ];
       var startDate, failPollStartDate, failPollEndDate, finalPollStartDate, endDate;
       return Promise.all(feedFiles.map(function(feedFile) {
@@ -503,7 +504,7 @@ describe('Fetcher', function() {
         feedFiles.forEach(function(feedFile, i) {
           nock(feedFile.url).get('/').once().reply(200, loadedFiles[i]);
         });
-        return loadFile('./test/data/fetcher/opml_two.xml');
+        return loadFile('opml_two.xml');
       }).then(function(data) {
         config = data;
         return persistence.getUserData();

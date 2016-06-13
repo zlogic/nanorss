@@ -1,4 +1,5 @@
 var fs = require('fs');
+var path = require('path');
 var assert = require('assert');
 
 var feedConfiguration = require('../lib/feed/configuration');
@@ -24,7 +25,7 @@ describe('Configuration reader', function() {
       });
     });
     it('should fail when parsing a bad pagemonitor configuration', function (done) {
-      return fs.readFile("./test/data/configuration/pagemonitor_broken.xml", function(error, data){
+      return fs.readFile(path.join(__dirname, 'data', 'configuration', 'pagemonitor_broken.xml'), function(error, data){
         if(error) return done(error);
         pagemonitorConfiguration.parseConfig(data, function(error, data) {
           assert.equal(undefined, data);
@@ -36,7 +37,7 @@ describe('Configuration reader', function() {
   });
   describe('feed', function() {
     it('should be able to get a list of URLs from an OPML configuration', function (done) {
-      return fs.readFile("./test/data/configuration/opml.xml", function(error, data){
+      return fs.readFile(path.join(__dirname, 'data', 'configuration', 'opml.xml'), function(error, data){
         if(error) return done(error);
         feedConfiguration.parseGetUrls(data, function(error, data) {
           if(error) return done(error);
@@ -46,7 +47,7 @@ describe('Configuration reader', function() {
       });
     });
     it('should fail when parsing a bad pagemonitor configuration to get a list of URLs', function (done) {
-      return fs.readFile("./test/data/configuration/opml_broken.xml", function(error, data){
+      return fs.readFile(path.join(__dirname, 'data', 'configuration', 'opml_broken.xml'), function(error, data){
         if(error) return done(error);
         feedConfiguration.parseGetUrls(data, function(error, data) {
           assert.equal(undefined, data);
@@ -56,7 +57,7 @@ describe('Configuration reader', function() {
       });
     });
     it('should be able to get a list of URLs with associated names from an OPML configuration', function (done) {
-      return fs.readFile("./test/data/configuration/opml.xml", function(error, data){
+      return fs.readFile(path.join(__dirname, 'data', 'configuration', 'opml.xml'), function(error, data){
         if(error) return done(error);
         feedConfiguration.parseGetUrlNames(data, function(error, data) {
           if(error) return done(error);
@@ -66,7 +67,7 @@ describe('Configuration reader', function() {
       });
     });
     it('should fail when parsing a bad pagemonitor configuration to get a list of URLs with associated names', function (done) {
-      return fs.readFile("./test/data/configuration/opml_broken.xml", function(error, data){
+      return fs.readFile(path.join(__dirname, 'data', 'configuration', 'opml_broken.xml'), function(error, data){
         if(error) return done(error);
         feedConfiguration.parseGetUrls(data, function(error, data) {
           assert.equal(undefined, data);
