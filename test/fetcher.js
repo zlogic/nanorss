@@ -65,7 +65,7 @@ describe('Fetcher', function() {
           assert.equal(pageMonitorItem.updatedAt <= endDate, true);
           return pageMonitorItem.toJSON();
         });
-        //pageMonitorItems.sort(function(a, b){ return a.url.localeCompare(b.url); })
+        //pageMonitorItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
         assert.equal(pageMonitorItems[0].url, pages[0].url);
         assert.equal(pageMonitorItems[1].url, pages[1].url);
         assert.equal(pageMonitorItems[0].delta, '@@ -1,1 +1,5 @@\n \n+\n+Some text\n+Another line\n+\n');
@@ -290,7 +290,7 @@ describe('Fetcher', function() {
             delete feedItem.updatedAt;
             delete feedItem.id;
           });
-          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); })
+          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
         assert.equal(feeds[0].url, feedFiles[0].url);
@@ -348,7 +348,7 @@ describe('Fetcher', function() {
             delete feedItem.updatedAt;
             delete feedItem.id;
           });
-          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); })
+          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
         assert.equal(feeds[0].url, 'http://sites-site1.com');
@@ -395,7 +395,7 @@ describe('Fetcher', function() {
             delete feedItem.updatedAt;
             delete feedItem.id;
           });
-          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); })
+          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
         assert.equal(feeds[0].url, 'http://sites-site1.com');
@@ -467,7 +467,7 @@ describe('Fetcher', function() {
             var comparison = a.title.localeCompare(b.title);
             if(comparison !== 0)  return comparison;
             return a.contents.localeCompare(b.contents);
-          })
+          });
           return feed;
         });
         assert.equal(feeds[0].url, feedFiles[0].url);
@@ -543,7 +543,7 @@ describe('Fetcher', function() {
             delete feedItem.updatedAt;
             delete feedItem.id;
           });
-          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); })
+          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
         assert.equal(feeds[0].url, feedFiles[0].url);
@@ -585,7 +585,7 @@ describe('Fetcher', function() {
             delete feedItem.updatedAt;
             delete feedItem.id;
           });
-          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); })
+          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
         assert.equal(feeds[0].url, feedFiles[0].url);

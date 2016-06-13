@@ -196,6 +196,7 @@ describe('Persistence', function() {
           delete feedItem.Feed;
           return feedItem;
         });
+        feedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
         assert.deepEqual(feedItems, saveFeedItems);
         done();
       }).catch(done);
@@ -236,6 +237,7 @@ describe('Persistence', function() {
           delete feedItem.Feed;
           return feedItem;
         });
+        feedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
         assert.deepEqual(feedItems, saveFeedItems1.concat(saveFeedItems2));
         done();
       }).catch(done);
@@ -277,6 +279,7 @@ describe('Persistence', function() {
           });
           delete feed.createdAt;
           delete feed.updatedAt;
+          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
         assert.deepEqual(feeds, [{url:'http://feed1', FeedItems: saveFeedItems1}, {url:'http://feed2', FeedItems: saveFeedItems2}]);
@@ -325,6 +328,7 @@ describe('Persistence', function() {
           });
           delete feed.createdAt;
           delete feed.updatedAt;
+          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
         assert.deepEqual(feeds, [{url:'http://feed1', FeedItems: saveFeedItems1}, {url:'http://feed2', FeedItems: saveFeedItems2}]);
@@ -358,6 +362,7 @@ describe('Persistence', function() {
           });
           delete feed.createdAt;
           delete feed.updatedAt;
+          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
         assert.deepEqual(feeds, [{url:'http://feed1', FeedItems: saveFeedItems1}, {url:'http://feed2', FeedItems: saveFeedItems2}]);
@@ -406,6 +411,7 @@ describe('Persistence', function() {
           });
           delete feed.createdAt;
           delete feed.updatedAt;
+          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
         assert.deepEqual(feeds, [{url:'http://feed1', FeedItems: saveFeedItems1}, {url:'http://feed2', FeedItems: saveFeedItems2}]);
@@ -436,6 +442,7 @@ describe('Persistence', function() {
           });
           delete feed.createdAt;
           delete feed.updatedAt;
+          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
         assert.deepEqual(feeds, [{url:'http://feed1', FeedItems: saveFeedItems1}, {url:'http://feed2', FeedItems: saveFeedItems2}]);
