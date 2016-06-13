@@ -413,7 +413,7 @@ describe('Fetcher', function() {
         {url: 'http://sites-site1.com', file: 'rss1_updated.xml'},
         {url: 'http://updates-site2.com', file: 'rss2.xml'}
       ];
-      var notUpdatedLinks = ['http://site1/link1', 'http://site1/link3', 'http://site2/link1'];
+      var notUpdatedLinks = ['http://site1/link1', 'http://site1/link3'];
       var newItems = ['http://site1/link3-updated', 'http://site1/link5'];
       var startDate, updateDate, endDate;
       return Promise.all(feedFiles.map(function(feedFile) {
@@ -572,9 +572,9 @@ describe('Fetcher', function() {
           feed = feed.toJSON();
           feed.FeedItems.forEach(function(feedItem){
             assert.equal(feedItem.createdAt >= startDate, true);
-            assert.equal(feedItem.updatedAt >= startDate, true);
+            assert.equal(feedItem.updatedAt >= finalPollStartDate, true);
             assert.equal(feedItem.createdAt <= failPollStartDate, true);
-            assert.equal(feedItem.updatedAt <= (feedItem.url === 'http://site1/link2' ? endDate : failPollStartDate), true);
+            assert.equal(feedItem.updatedAt <= endDate, true);
             if(feedItem.url === 'http://site1/link2'){
               //No date in this item
               assert.equal(feedItem.date >= startDate, true);

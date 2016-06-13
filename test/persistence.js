@@ -179,8 +179,11 @@ describe('Persistence', function() {
         {guid: 'Guid-02', title: 'Title 2', date: new Date('2014-01-02T12:34:56'), contents: 'Contents 2', url: 'http://feed1/item2'}
       ];
       var startDate = new Date();
-      return persistence.saveFeed('http://feed1', saveFeedItems).then(function(feedItems){
-        var endDate = new Date();
+      var endDate;
+      return persistence.saveFeed('http://feed1', saveFeedItems).then(function() {
+        endDate = new Date();
+        return persistence.getFeedItems();
+      }).then(function(feedItems){
         feedItems = feedItems.map(function(feedItem) {
           feedItem = feedItem.toJSON();
           assert.equal(feedItem.createdAt >= startDate, true);
@@ -190,6 +193,7 @@ describe('Persistence', function() {
           delete feedItem.createdAt;
           delete feedItem.updatedAt;
           delete feedItem.id;
+          delete feedItem.Feed;
           return feedItem;
         });
         assert.deepEqual(feedItems, saveFeedItems);
@@ -344,9 +348,9 @@ describe('Persistence', function() {
           feed.FeedItems.forEach(function(feedItem){
             var feedUrl = feedItem.url.match(/^(http:\/\/[^\/]+)\/.*$/)[1];
             assert.equal(feedItem.createdAt >= startDate, true);
-            assert.equal(feedItem.updatedAt >= (feedItem.url === saveFeedItems1[0].url ? updateStartDate : startDate), true);
+            assert.equal(feedItem.updatedAt >= (feedItem.FeedUrl === 'http://feed1' ? updateStartDate : startDate), true);
             assert.equal(feedItem.createdAt <= endDate, true);
-            assert.equal(feedItem.updatedAt <= (feedItem.url === saveFeedItems1[0].url ? updateEndDate : endDate), true);
+            assert.equal(feedItem.updatedAt <= (feedItem.FeedUrl === 'http://feed1' ? updateEndDate : endDate), true);
             assert.equal(feedUrl, feed.url);
             delete feedItem.createdAt;
             delete feedItem.updatedAt;
@@ -422,9 +426,9 @@ describe('Persistence', function() {
           feed.FeedItems.forEach(function(feedItem){
             var feedUrl = feedItem.url.match(/^(http:\/\/[^\/]+)\/.*$/)[1];
             assert.equal(feedItem.createdAt >= (feedItem.url === saveFeedItems1[2].url ? updateStartDate : startDate), true);
-            assert.equal(feedItem.updatedAt >= (feedItem.url === saveFeedItems1[2].url ? updateStartDate : startDate), true);
+            assert.equal(feedItem.updatedAt >= (feedItem.FeedUrl === 'http://feed1' ? updateStartDate : startDate), true);
             assert.equal(feedItem.createdAt <= (feedItem.url === saveFeedItems1[2].url ? updateEndDate : endDate), true);
-            assert.equal(feedItem.updatedAt <= (feedItem.url === saveFeedItems1[2].url ? updateEndDate : endDate), true);
+            assert.equal(feedItem.updatedAt <= (feedItem.FeedUrl === 'http://feed1' ? updateEndDate : endDate), true);
             assert.equal(feedUrl, feed.url);
             delete feedItem.createdAt;
             delete feedItem.updatedAt;
