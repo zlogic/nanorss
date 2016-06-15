@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "nodemon": "nodemon ./bin/www",
     "postinstall": "bower install",
     "test": "mocha test/*.js",
+    "runmaintenance": "node ./bin/worker.js",
     "worker": "node ./bin/worker.js"
   },
   "dependencies": {
@@ -26,14 +26,14 @@
     "pg-hstore": "~2.3.2",
     "sequelize": "~3.23.3",
     "serve-favicon": "~2.3.0",
+    "split": "~1.0.0",
     "sqlite3": "~3.1.4",
     "winston": "~2.2.0",
     "xml2js": "~0.4.16"
   },
   "devDependencies": {
     "mocha": "~2.5.3",
-    "nock": "~8.0.0",
-    "nodemon": "~1.9.2"
+    "nock": "~8.0.0"
   },
   "engines": {
     "node": "~6.2.1",
