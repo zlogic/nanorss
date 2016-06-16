@@ -1,9 +1,7 @@
 {
 	"Not Found": "Not Found",
 	"An error has occurred: %s, status %s, stack trace:\n%s": "An error has occurred: %s, status %s, stack trace:\n%s",
-	"nanoRSS configuration": "nanoRSS configuration",
 	"OPML": "OPML",
-	"Submit": "Submit",
 	"Page Monitor": "Page Monitor",
 	"Fetching page %s": "Fetching page %s",
 	"nanoRSS": "nanoRSS",
@@ -19,5 +17,18 @@
 	"Item %s not found": "Item %s not found",
 	"Go to site": "Go to site",
 	"Error when fetching page: %s": "Error when fetching page: %s",
-	"Cleanup completed": "Cleanup completed"
+	"Cleanup completed": "Cleanup completed",
+	"Username": "Username",
+	"Password": "Password",
+	"Remember me": "Remember me",
+	"Sign in": "Sign in",
+	"Password is not set": "Password is not set",
+	"Bad credentials": "Bad credentials",
+	"Cannot create token": "Cannot create token",
+	"Login failed": "Login failed",
+	"Login": "Login",
+	"Configuration": "Configuration",
+	"Save": "Save",
+	"nanoRSS configuration": "nanoRSS configuration",
+	"Cannot delete non-existing token %s": "Cannot delete non-existing token %s"
 }

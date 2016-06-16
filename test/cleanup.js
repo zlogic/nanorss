@@ -29,7 +29,7 @@ describe('Cleanup', function() {
   });
 
   afterEach(function(done) {
-    delete process.env.EXPIRE_DAYS;
+    delete process.env.ITEM_EXPIRE_DAYS;
     done();
   });
 
@@ -111,7 +111,7 @@ describe('Cleanup', function() {
   describe('feed', function () {
     it('should delete expired feed items', function (done) {
       this.timeout(4000);
-      process.env.EXPIRE_DAYS = oneSecond.toString();
+      process.env.ITEM_EXPIRE_DAYS = oneSecond.toString();
       var saveFeedItems = [
         {guid: 'Guid-01', title: 'Title 1', date: new Date('2014-01-01T12:34:56'), contents: 'Contents 1', url: 'http://feed1/item1'},
         {guid: 'Guid-02', title: 'Title 2', date: new Date('2014-01-02T12:34:56'), contents: 'Contents 2', url: 'http://feed1/item2'}
@@ -157,7 +157,7 @@ describe('Cleanup', function() {
     });
     it('should delete expired feeds', function (done) {
       this.timeout(4000);
-      process.env.EXPIRE_DAYS = oneSecond.toString();
+      process.env.ITEM_EXPIRE_DAYS = oneSecond.toString();
       var saveFeedItems1 = [
         {guid: 'Guid-01', title: 'Title 1', date: new Date('2014-01-01T12:34:56'), contents: 'Contents 1', url: 'http://feed1/item1'},
         {guid: 'Guid-02', title: 'Title 2', date: new Date('2014-01-02T12:34:56'), contents: 'Contents 2', url: 'http://feed1/item2'}
@@ -207,7 +207,7 @@ describe('Cleanup', function() {
     });
     it('should delete feeds absent from configuration file', function (done) {
       this.timeout(4000);
-      process.env.EXPIRE_DAYS = oneSecond.toString();
+      process.env.ITEM_EXPIRE_DAYS = oneSecond.toString();
       var saveFeedItems1 = [
         {guid: 'Guid-01', title: 'Title 1', date: new Date('2014-01-01T12:34:56'), contents: 'Contents 1', url: 'http://feed1/item1'},
         {guid: 'Guid-02', title: 'Title 2', date: new Date('2014-01-02T12:34:56'), contents: 'Contents 2', url: 'http://feed1/item2'}
@@ -251,7 +251,7 @@ describe('Cleanup', function() {
     });
     it('should do nothing with feed items or feeds if none have expired', function (done) {
       this.timeout(4000);
-      process.env.EXPIRE_DAYS = oneSecond.toString();
+      process.env.ITEM_EXPIRE_DAYS = oneSecond.toString();
       var saveFeedItems = [
         {guid: 'Guid-01', title: 'Title 1', date: new Date('2014-01-01T12:34:56'), contents: 'Contents 1', url: 'http://feed1/item1'},
         {guid: 'Guid-02', title: 'Title 2', date: new Date('2014-01-02T12:34:56'), contents: 'Contents 2', url: 'http://feed1/item2'}

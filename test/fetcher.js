@@ -406,6 +406,7 @@ describe('Fetcher', function() {
       }).catch(done);
     });
     it('should handle updates to RSS feeds', function (done) {
+      this.timeout(4000);
       var config;
       var feedFiles = [
         {url: 'http://sites-site1.com', file: 'rss1.xml'},
@@ -487,6 +488,7 @@ describe('Fetcher', function() {
       }).catch(done);
     });
     it('should handle connection failures when polling an RSS feed', function (done) {
+      this.timeout(4000);
       var config;
       var feedFiles = [
         {url: 'http://sites-site1.com', file: 'rss1.xml'},

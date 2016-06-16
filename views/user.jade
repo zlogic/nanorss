@@ -1,0 +1,36 @@
+a(href="#configuration", data-toggle="collapse", aria-expanded="false")
+  h2= __('Configuration')
+div(id="configuration", class="collapse")
+  form(id="configurationForm", accept-charset="utf-8", class="form-horizontal")
+    div(class="form-group")
+      label(for="editUsername", class="col-sm-2 control-label")
+        | #{__('Username')}
+      div(class="col-sm-10")
+        input(type="text", class="form-control", id="editUsername", placeholder=__('Username'), required)
+    div(class="form-group")
+      label(for="editPassword", class="col-sm-2 control-label")
+        | #{__('Password')}
+      div(class="col-sm-10")
+        input(type="password", class="form-control", id="editPassword", placeholder=__('Password'))
+    div(class="form-group")
+      label(for="editOPML", class="col-sm-2 control-label")
+        | #{__('OPML')}
+      div(class="col-sm-10")
+        textarea(name="opml", id="editOPML", class="form-control", rows="20", required)= opml
+    div(class="form-group")
+      label(for="editPageMonitor", class="col-sm-2 control-label")
+        | #{__('Page Monitor')}
+      div(class="col-sm-10")
+        textarea(name="pagemonitor", id="editPageMonitor", class="form-control", rows="20", required)= pagemonitor
+    div(class="form-group")
+      div(class="col-sm-offset-2 col-sm-10")
+        button(type="submit", class="btn btn-default")
+          | #{__('Save')}
+
+h2 #{__('Items')}
+each page, index in items
+  div
+    h3
+      a(href="#item-"+index, data-toggle="collapse")
+        | #{page.title} / #{page.origin}
+    div(id="item-"+index, class="collapse expandable-item", data-fetchurl=page.fetchUrl)
