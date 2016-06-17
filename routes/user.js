@@ -69,6 +69,8 @@ router.get('/', function(req, res, next) {
     res.render('user', {
       items: items
     });
+  }).catch(function() {
+    res.render('user', { items: [] });
   });
 });
 

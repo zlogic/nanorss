@@ -116,7 +116,10 @@ $(document).ready(function() {
         event.preventDefault();
         // Prepare request
         var $form = $(this);
-        var posting = authData.post("user/configuration", {username: username.val(), password: password.val(), opml: opml.val(), pagemonitor: pagemonitor.val()});
+        var postData = {username: username.val(), password: password.val(), opml: opml.val(), pagemonitor: pagemonitor.val()};
+        if(postData.password === null || postData.password === undefined || postData.password === '')
+          delete postData.password;
+        var posting = authData.post("user/configuration", postData);
         //Handle responses
         posting.done(function(data) {
           configurationCollapsible.collapse('hide');
