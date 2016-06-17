@@ -2,6 +2,7 @@ var serviceBase = require('./utils/servicebase')
 var assert = require('assert');
 var persistence = require('../lib/services/persistence');
 var superagent = require('superagent');
+
 var i18n = require('i18n');
 
 var baseUrl = serviceBase.baseUrl;
@@ -33,6 +34,23 @@ describe('Service', function() {
   };
 
   describe('userdata', function () {
+    it('should get the page for an authenticated user', function (done) {
+      var userData = {username: "default", password: "pass"};
+      prepopulate().then(function(){
+        authenticateUser(userData, function(err, token, result){
+          if(err) return done(err);
+          superagent.get(baseUrl + "/user").set(tokenHeader(token)).end(function(err, result){
+            if(err) return done(err);
+            try {
+              assert.ok(result);
+              assert.equal(result.status, 200);
+              assert.ok(result.text.includes(i18n.__("Configuration")));
+              done();
+            } catch(err) {done(err);}
+          });
+        });
+      }).catch(done);
+    });
     it('should get details for an authenticated user', function (done) {
       var userData = {username: "default", password: "pass"};
       prepopulate().then(function(){
@@ -168,6 +186,23 @@ describe('Service', function() {
         });
       }).catch(done);
     });
+    it('should ignore id in requests for getting the page for an authenticated user', function (done) {
+      var userData = {username: "default", password: "pass"};
+      prepopulate().then(function(){
+        authenticateUser(userData, function(err, token, result){
+          if(err) return done(err);
+          superagent.get(baseUrl + "/user").set(tokenHeader(token)).send({id: 2}).end(function(err, result){
+            if(err) return done(err);
+            try {
+              assert.ok(result);
+              assert.equal(result.status, 200);
+              assert.ok(result.text.includes(i18n.__("Configuration")));
+              done();
+            } catch(err) {done(err);}
+          });
+        });
+      }).catch(done);
+    });
     it('should ignore id in requests for getting user data and use OAuth data instead', function (done) {
       var userData = {username: "default", password: "pass"};
       prepopulate().then(function(){
@@ -184,6 +219,31 @@ describe('Service', function() {
           });
         });
       });
+    });
+    it('should not be able to get the page for an unauthenticated user (no token)' , function (done) {
+      prepopulate().then(function(){
+        superagent.get(baseUrl + "/user").end(function(err, result){
+          try {
+            assert.ok(err);
+            assert.equal(err.status, 401);
+            assert.equal(err.response.text, 'Unauthorized');
+            done();
+          } catch(err) {done(err);}
+        });
+      }).catch(done);
+    });
+    it('should not be able to get the page for an unauthenticated user (bad token)', function (done) {
+      prepopulate().then(function(){
+        var token = 'aaaa';
+        superagent.get(baseUrl + "/user").set(tokenHeader(token)).end(function(err, result){
+          try {
+            assert.ok(err);
+            assert.equal(err.status, 401);
+            assert.equal(err.response.text, 'Unauthorized');
+            done();
+          } catch(err) {done(err);}
+        });
+      }).catch(done);
     });
     it('should not be able to get user data for an unauthenticated user (no token)' , function (done) {
       prepopulate().then(function(){
@@ -213,7 +273,7 @@ describe('Service', function() {
     it('should not be able to change user data for an unauthenticated user (no token)' , function (done) {
       var newUserData = {username: "default", password: "pass", id: 1};
       prepopulate().then(function(){
-        superagent.get(baseUrl + "/user/configuration").send(newUserData).end(function(err, result){
+        superagent.post(baseUrl + "/user/configuration").send(newUserData).end(function(err, result){
           try {
             assert.ok(err);
             assert.equal(err.status, 401);
@@ -227,7 +287,7 @@ describe('Service', function() {
       var newUserData = {username: "default", password: "pass", id: 1};
       prepopulate().then(function(){
         var token = 'aaaa';
-        superagent.get(baseUrl + "/user/configuration").set(tokenHeader(token)).send(newUserData).end(function(err, result){
+        superagent.post(baseUrl + "/user/configuration").set(tokenHeader(token)).send(newUserData).end(function(err, result){
           try {
             assert.ok(err);
             assert.equal(err.status, 401);
