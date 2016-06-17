@@ -1,6 +1,6 @@
 var assert = require('assert');
 
-require('./utils/dbconfiguration.js');
+require('./utils/dbconfiguration');
 var persistence = require('../lib/services/persistence');
 var logger = require('../lib/services/logger').logger;
 require('./utils/logging');

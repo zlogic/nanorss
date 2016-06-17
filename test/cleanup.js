@@ -2,7 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var assert = require('assert');
 
-require('./utils/dbconfiguration.js');
+require('./utils/dbconfiguration');
 var persistence = require('../lib/services/persistence');
 var logger = require('../lib/services/logger').logger;
 var pagemonitor = require('../lib/pagemonitor/fetcher');

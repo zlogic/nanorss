@@ -1,7 +1,7 @@
 var persistence = require('../../lib/services/persistence');
 var logger = require('../../lib/services/logger').logger;
 var superagent = require('superagent');
-var dbConfiguration = require('./dbconfiguration');
+require('./dbconfiguration');
 require('./i18nconfiguration');
 require('./logging');
 
