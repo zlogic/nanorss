@@ -199,6 +199,7 @@ describe('Persistence', function() {
           return feedItem;
         });
         feedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
+        saveFeedItems.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed1'; });
         assert.deepEqual(feedItems, saveFeedItems);
         done();
       }).catch(done);
@@ -240,6 +241,8 @@ describe('Persistence', function() {
           return feedItem;
         });
         feedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
+        saveFeedItems1.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed1'; });
+        saveFeedItems2.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed2'; });
         assert.deepEqual(feedItems, saveFeedItems1.concat(saveFeedItems2));
         done();
       }).catch(done);
@@ -284,6 +287,8 @@ describe('Persistence', function() {
           feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
+        saveFeedItems1.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed1'; });
+        saveFeedItems2.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed2'; });
         assert.deepEqual(feeds, [{url:'http://feed1', FeedItems: saveFeedItems1}, {url:'http://feed2', FeedItems: saveFeedItems2}]);
         done();
       }).catch(done);
@@ -333,11 +338,14 @@ describe('Persistence', function() {
           feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
+        saveFeedItems1.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed1'; });
+        saveFeedItems2.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed2'; });
         assert.deepEqual(feeds, [{url:'http://feed1', FeedItems: saveFeedItems1}, {url:'http://feed2', FeedItems: saveFeedItems2}]);
         saveFeedItems1[0].title = 'Title 1-updated';
         saveFeedItems1[0].date = new Date('2015-01-01T12:34:56');
         saveFeedItems1[0].contents = 'Contents 1-updated';
         saveFeedItems1[0].url = 'http://feed1/item1-updated';
+        saveFeedItems1.forEach(function(saveFeedItem){ delete saveFeedItem.FeedUrl; });
         updateStartDate = new Date();
         return persistence.saveFeed('http://feed1', saveFeedItems1);
       }).then(function() {
@@ -354,9 +362,9 @@ describe('Persistence', function() {
           feed.FeedItems.forEach(function(feedItem){
             var feedUrl = feedItem.url.match(/^(http:\/\/[^\/]+)\/.*$/)[1];
             assert.equal(feedItem.createdAt >= startDate, true);
-            assert.equal(feedItem.updatedAt >= (feedItem.FeedUrl === 'http://feed1' ? updateStartDate : startDate), true);
+            assert.equal(feedItem.updatedAt >= (feed.url === 'http://feed1' ? updateStartDate : startDate), true);
             assert.equal(feedItem.createdAt <= endDate, true);
-            assert.equal(feedItem.updatedAt <= (feedItem.FeedUrl === 'http://feed1' ? updateEndDate : endDate), true);
+            assert.equal(feedItem.updatedAt <= (feed.url === 'http://feed1' ? updateEndDate : endDate), true);
             assert.equal(feedUrl, feed.url);
             delete feedItem.createdAt;
             delete feedItem.updatedAt;
@@ -367,6 +375,7 @@ describe('Persistence', function() {
           feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
+        saveFeedItems1.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed1'; });
         assert.deepEqual(feeds, [{url:'http://feed1', FeedItems: saveFeedItems1}, {url:'http://feed2', FeedItems: saveFeedItems2}]);
         done();
       }).catch(done);
@@ -416,8 +425,11 @@ describe('Persistence', function() {
           feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
+        saveFeedItems1.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed1'; });
+        saveFeedItems2.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed2'; });
         assert.deepEqual(feeds, [{url:'http://feed1', FeedItems: saveFeedItems1}, {url:'http://feed2', FeedItems: saveFeedItems2}]);
         saveFeedItems1.push({guid: 'Guid-05', title: 'Title 5', date: new Date('2014-01-05T12:34:56'), contents: 'Contents 5', url: 'http://feed1/item5'});
+        saveFeedItems1.forEach(function(saveFeedItem){ delete saveFeedItem.FeedUrl; });
         updateStartDate = new Date();
         return persistence.saveFeed('http://feed1', saveFeedItems1);
       }).then(function() {
@@ -447,6 +459,8 @@ describe('Persistence', function() {
           feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
+        saveFeedItems1.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed1'; });
+        saveFeedItems2.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed2'; });
         assert.deepEqual(feeds, [{url:'http://feed1', FeedItems: saveFeedItems1}, {url:'http://feed2', FeedItems: saveFeedItems2}]);
         done();
       }).catch(done);
@@ -482,6 +496,7 @@ describe('Persistence', function() {
         delete feedItem.createdAt;
         delete feedItem.updatedAt;
         delete feedItem.id;
+        saveFeedItems1[0].FeedUrl = 'http://feed1';
         assert.deepEqual(feedItem, saveFeedItems1[0]);
         done();
       }).catch(done);

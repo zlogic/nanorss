@@ -144,6 +144,7 @@ describe('Cleanup', function() {
             delete feedItem.updatedAt;
             delete feedItem.id;
             delete feedItem.Feed;
+            delete feedItem.FeedUrl;
             return feedItem;
           });
           delete feed.id;
@@ -194,6 +195,7 @@ describe('Cleanup', function() {
             delete feedItem.updatedAt;
             delete feedItem.id;
             delete feedItem.Feed;
+            delete feedItem.FeedUrl;
             return feedItem;
           });
           delete feed.id;
@@ -238,6 +240,7 @@ describe('Cleanup', function() {
             delete feedItem.updatedAt;
             delete feedItem.id;
             delete feedItem.Feed;
+            delete feedItem.FeedUrl;
             return feedItem;
           });
           delete feed.id;
@@ -282,6 +285,7 @@ describe('Cleanup', function() {
             delete feedItem.updatedAt;
             delete feedItem.id;
             delete feedItem.Feed;
+            delete feedItem.FeedUrl;
             return feedItem;
           });
           delete feed.id;
