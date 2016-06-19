@@ -13,22 +13,22 @@ var authData = {
     this.token = token;
     try {
       if(saveToken)
-        localStorage.setItem("access_token", token);
+        localStorage.setItem("nanorss_access_token", token);
       else
-        localStorage.removeItem("access_token");
+        localStorage.removeItem("nanorss_access_token");
     } catch (err) {}
     this.updateLoginForm();
   },
   loadToken: function() {
     try {
-      this.token = localStorage["access_token"];
+      this.token = localStorage["nanorss_access_token"];
     } catch (err) {}
     this.updateLoginForm();
   },
   forgetToken: function() {
     this.token = undefined;
     try {
-      localStorage.removeItem("access_token");
+      localStorage.removeItem("nanorss_access_token");
     } catch (err) {}
     this.updateLoginForm();
   },
