@@ -36,7 +36,7 @@ describe('Fetcher', function() {
         {url: 'https://site1.com', file: 'page1.html'},
         {url: 'http://site2.com', file: 'page2.txt'}
       ];
-      var startDate, endDate;
+      var userSaveStartDate, startDate, endDate;
       return Promise.all(pages.map(function(page) {
         return loadFile(page.file);
       })).then(function(pageFiles) {
@@ -49,6 +49,7 @@ describe('Fetcher', function() {
         return persistence.getUserData();
       }).then(function(user){
         user.pagemonitor = config;
+        userSaveStartDate = new Date();
         return user.save();
       }).then(function() {
         startDate = new Date();
@@ -59,9 +60,9 @@ describe('Fetcher', function() {
       }).then(function(pageMonitorItems) {
         assert.equal(pageMonitorItems.length, 2);
         pageMonitorItems = pageMonitorItems.map(function(pageMonitorItem) {
-          assert.equal(pageMonitorItem.createdAt >= startDate, true);
+          assert.equal(pageMonitorItem.createdAt >= userSaveStartDate, true);
           assert.equal(pageMonitorItem.updatedAt >= startDate, true);
-          assert.equal(pageMonitorItem.createdAt <= endDate, true);
+          assert.equal(pageMonitorItem.createdAt <= startDate, true);
           assert.equal(pageMonitorItem.updatedAt <= endDate, true);
           return pageMonitorItem.toJSON();
         });
@@ -83,7 +84,7 @@ describe('Fetcher', function() {
         {url: 'https://site1.com', file: 'page1_update_unmonitored.html'},
         {url: 'http://site2.com', file: 'page2.txt'}
       ];
-      var startDate, secondPollDate, endDate;
+      var userSaveStartDate, startDate, secondPollDate, endDate;
       return Promise.all(pages.map(function(page) {
         return loadFile(page.file);
       })).then(function(pageFiles) {
@@ -96,6 +97,7 @@ describe('Fetcher', function() {
         return persistence.getUserData();
       }).then(function(user){
         user.pagemonitor = config;
+        userSaveStartDate = new Date();
         return user.save();
       }).then(function() {
         startDate = new Date();
@@ -109,9 +111,9 @@ describe('Fetcher', function() {
       }).then(function(pageMonitorItems) {
         assert.equal(pageMonitorItems.length, 2);
         pageMonitorItems = pageMonitorItems.map(function(pageMonitorItem) {
-          assert.equal(pageMonitorItem.createdAt >= startDate, true);
+          assert.equal(pageMonitorItem.createdAt >= userSaveStartDate, true);
           assert.equal(pageMonitorItem.updatedAt >= startDate, true);
-          assert.equal(pageMonitorItem.createdAt <= secondPollDate, true);
+          assert.equal(pageMonitorItem.createdAt <= startDate, true);
           assert.equal(pageMonitorItem.updatedAt <= secondPollDate, true);
           return pageMonitorItem.toJSON();
         });
@@ -132,7 +134,7 @@ describe('Fetcher', function() {
         {url: 'https://site1.com', file: 'page1_update_monitored.html'},
         {url: 'http://site2.com', file: 'page2.txt'}
       ];
-      var startDate, secondPollDate, endDate;
+      var userSaveStartDate, startDate, secondPollDate, endDate;
       return Promise.all(pages.map(function(page) {
         return loadFile(page.file);
       })).then(function(pageFiles) {
@@ -145,6 +147,7 @@ describe('Fetcher', function() {
         return persistence.getUserData();
       }).then(function(user){
         user.pagemonitor = config;
+        userSaveStartDate = new Date();
         return user.save();
       }).then(function() {
         startDate = new Date();
@@ -158,9 +161,9 @@ describe('Fetcher', function() {
       }).then(function(pageMonitorItems) {
         assert.equal(pageMonitorItems.length, 2);
         pageMonitorItems = pageMonitorItems.map(function(pageMonitorItem) {
-          assert.equal(pageMonitorItem.createdAt >= startDate, true);
+          assert.equal(pageMonitorItem.createdAt >= userSaveStartDate, true);
           assert.equal(pageMonitorItem.updatedAt >= (pageMonitorItem.url === pages[0].url ? secondPollDate : startDate), true);
-          assert.equal(pageMonitorItem.createdAt <= secondPollDate, true);
+          assert.equal(pageMonitorItem.createdAt <= startDate, true);
           assert.equal(pageMonitorItem.updatedAt <= (pageMonitorItem.url === pages[0].url ? endDate : secondPollDate), true);
           return pageMonitorItem.toJSON();
         });
@@ -179,7 +182,7 @@ describe('Fetcher', function() {
         {url: 'https://site1.com', file: 'page1.html'},
         {url: 'http://site2.com', file: 'page2.txt'}
       ];
-      var startDate, failPollStartDate, failPollEndDate, finalPollStartDate, endDate;
+      var userSaveStartDate, startDate, failPollStartDate, failPollEndDate, finalPollStartDate, endDate;
       var errorMessage = i18n.__('Error when fetching page: %s', 'Access denied');
       return Promise.all(pages.map(function(page) {
         return loadFile(page.file);
@@ -198,6 +201,7 @@ describe('Fetcher', function() {
         return persistence.getUserData();
       }).then(function(user){
         user.pagemonitor = config;
+        userSaveStartDate = new Date();
         return user.save();
       }).then(function() {
         startDate = new Date();
@@ -223,9 +227,9 @@ describe('Fetcher', function() {
       }).then(function(pageMonitorItems) {
         assert.equal(pageMonitorItems.length, 2);
         pageMonitorItems = pageMonitorItems.map(function(pageMonitorItem) {
-          assert.equal(pageMonitorItem.createdAt >= startDate, true);
+          assert.equal(pageMonitorItem.createdAt >= userSaveStartDate, true);
           assert.equal(pageMonitorItem.updatedAt >= (pageMonitorItem.url === pages[0].url ? finalPollStartDate : startDate), true);
-          assert.equal(pageMonitorItem.createdAt <= failPollStartDate, true);
+          assert.equal(pageMonitorItem.createdAt <= startDate, true);
           assert.equal(pageMonitorItem.updatedAt <= (pageMonitorItem.url === pages[0].url ? endDate : failPollStartDate), true);
           return pageMonitorItem.toJSON();
         });

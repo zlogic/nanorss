@@ -11,8 +11,6 @@ var tokenHeader = serviceBase.tokenHeader;
 
 var prepopulate = function() {
   return persistence.getUserData().then(function(user){
-    user.opml = "opml";
-    user.pagemonitor = "pagemonitor";
     user.password = "pass";
     return user.save();
   })

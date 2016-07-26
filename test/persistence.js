@@ -1,9 +1,20 @@
 var assert = require('assert');
+var fs = require('fs');
+var path = require('path');
 
 require('./utils/dbconfiguration');
 var persistence = require('../lib/services/persistence');
 var logger = require('../lib/services/logger').logger;
 require('./utils/logging');
+
+var loadFile = function(filename) {
+  return new Promise(function(resolve, reject){
+    fs.readFile(path.join(__dirname, 'data', 'persistence', filename), function(error, data){
+      if(error) return reject(error);
+      resolve(data);
+    });
+  });
+};
 
 describe('Persistence', function() {
   beforeEach(function(done) {
@@ -25,13 +36,13 @@ describe('Persistence', function() {
         assert.equal(user.username, 'default');
         user.password = 'pass';
         user.opml = 'opml';
-        user.pagemonitor = 'pagemonitor';
+        user.pagemonitor = '<pagemonitor/>';
         return user.save();
       }).then(function(){
         return persistence.getUserData().then(function(user){
           assert.equal(user.username, 'default');
           assert.equal(user.opml, 'opml');
-          assert.equal(user.pagemonitor, 'pagemonitor');
+          assert.equal(user.pagemonitor, '<pagemonitor/>');
           user.verifyPassword('pass').then(function(passwordValid){
             assert.equal(passwordValid, true);
           });
@@ -46,15 +57,35 @@ describe('Persistence', function() {
       var savePageMonitorItem = {
         url: 'http://item',
         contents: 'contents',
-        delta: 'delta'
+        delta: 'delta',
+        flags: null,
+        match: null,
+        replace: null,
+        title: 'Item 1'
       };
-      var startDate = new Date();
-      return persistence.savePageMonitorItem(savePageMonitorItem).then(function(pageMonitorItem){
+      var startDate, startSaveDate;
+      return persistence.getUserData().then(function(userData){
+        user = userData;
+        return loadFile('pagemonitor_1_item.xml').then(function(config) {
+          user.pagemonitor = config;
+          startDate = new Date();
+          return user.save();
+        });
+      }).then(function(user) {
+        startSaveDate = new Date();
+        savePageMonitorItem.UserId = user.id;
+        return persistence.getPageMonitorItems().then(function(pageMonitorItems){
+          assert.equal(pageMonitorItems.length, 1);
+          pageMonitorItems[0].contents = savePageMonitorItem.contents;
+          pageMonitorItems[0].delta = savePageMonitorItem.delta;
+          return pageMonitorItems[0].save();
+        });
+      }).then(function(pageMonitorItem){
         var endDate = new Date();
         pageMonitorItem = pageMonitorItem.toJSON();
         assert.equal(pageMonitorItem.createdAt >= startDate, true);
-        assert.equal(pageMonitorItem.updatedAt >= startDate, true);
-        assert.equal(pageMonitorItem.createdAt <= endDate, true);
+        assert.equal(pageMonitorItem.updatedAt >= startSaveDate, true);
+        assert.equal(pageMonitorItem.createdAt <= startSaveDate, true);
         assert.equal(pageMonitorItem.updatedAt <= endDate, true);
         delete pageMonitorItem.createdAt;
         delete pageMonitorItem.updatedAt;
@@ -64,12 +95,32 @@ describe('Persistence', function() {
       }).catch(done);
     });
     it('should be able to read all saved page monitor items', function (done) {
-      var savePageMonitorItems = [{ url: 'http://item1', contents: 'contents1', delta: 'delta1' }, { url: 'http://item2', contents: 'contents2', delta: 'delta2' }];
-      var startDate = new Date();
+      var savePageMonitorItems = [{ url: 'http://item1', contents: 'contents1', delta: 'delta1', title: 'Item 1' }, { url: 'http://item2', contents: 'contents2', delta: 'delta2', title: 'Item 2' }];
+      var startDate, startSaveDate;
       var endDate;
-      return Promise.all(savePageMonitorItems.map(function(savePageMonitorItem){
-        return persistence.savePageMonitorItem(savePageMonitorItem);
-      })).then(function() {
+      return persistence.getUserData().then(function(userData){
+        user = userData;
+        return loadFile('pagemonitor_2_items.xml').then(function(config) {
+          user.pagemonitor = config;
+          startDate = new Date();
+          return user.save();
+        });
+      }).then(function(user) {
+        startSaveDate = new Date();
+        return persistence.getPageMonitorItems().then(function(pageMonitorItems){
+          pageMonitorItems.forEach(function(pageMonitorItem) {
+            var savePageMonitorItem = savePageMonitorItems.find(function(savePageMonitorItem){ return savePageMonitorItem.url === pageMonitorItem.url; })
+            pageMonitorItem.contents = savePageMonitorItem.contents;
+            pageMonitorItem.delta = savePageMonitorItem.delta;
+            savePageMonitorItem.flags = null;
+            savePageMonitorItem.match = null;
+            savePageMonitorItem.replace = null;
+            savePageMonitorItem.UserId = user.id;
+            savePageMonitorItem.id = pageMonitorItem.id;
+          })
+          return Promise.all(pageMonitorItems.map(function(pageMonitorItem) {return pageMonitorItem.save();}));
+        });
+      }).then(function() {
         endDate = new Date();
         return persistence.getPageMonitorItems();
       }).then(function(pageMonitorItems) {
@@ -77,12 +128,11 @@ describe('Persistence', function() {
         pageMonitorItems = pageMonitorItems.map(function(pageMonitorItem) {
           pageMonitorItem = pageMonitorItem.toJSON();
           assert.equal(pageMonitorItem.createdAt >= startDate, true);
-          assert.equal(pageMonitorItem.updatedAt >= startDate, true);
-          assert.equal(pageMonitorItem.createdAt <= endDate, true);
+          assert.equal(pageMonitorItem.updatedAt >= startSaveDate, true);
+          assert.equal(pageMonitorItem.createdAt <= startSaveDate, true);
           assert.equal(pageMonitorItem.updatedAt <= endDate, true);
           delete pageMonitorItem.createdAt;
           delete pageMonitorItem.updatedAt;
-          delete pageMonitorItem.id;
           return pageMonitorItem;
         });
         assert.deepEqual(pageMonitorItems, savePageMonitorItems);
@@ -90,34 +140,56 @@ describe('Persistence', function() {
       }).catch(done);
     });
     it('should be able to update a saved page monitor item', function (done) {
-      var savePageMonitorItems = [{ url: 'http://item1', contents: 'contents1', delta: 'delta1' }, { url: 'http://item2', contents: 'contents2', delta: 'delta2' }];
-      var startDate = new Date();
+      var savePageMonitorItems = [{ url: 'http://item1', contents: 'contents1', delta: 'delta1', title: 'Item 1' }, { url: 'http://item2', contents: 'contents2', delta: 'delta2', title: 'Item 2' }];
+      var startDate, startSaveDate;
       var endDate;
       var updateStartDate;
       var updateEndDate;
-      return Promise.all(savePageMonitorItems.map(function(savePageMonitorItem){
-        return persistence.savePageMonitorItem(savePageMonitorItem);
-      })).then(function() {
+      return persistence.getUserData().then(function(userData){
+        user = userData;
+        return loadFile('pagemonitor_2_items.xml').then(function(config) {
+          user.pagemonitor = config;
+          startDate = new Date();
+          return user.save();
+        });
+      }).then(function(user) {
+        startSaveDate = new Date();
+        return persistence.getPageMonitorItems().then(function(pageMonitorItems){
+          pageMonitorItems.forEach(function(pageMonitorItem) {
+            var savePageMonitorItem = savePageMonitorItems.find(function(savePageMonitorItem){ return savePageMonitorItem.url === pageMonitorItem.url; })
+            pageMonitorItem.contents = savePageMonitorItem.contents;
+            pageMonitorItem.delta = savePageMonitorItem.delta;
+            savePageMonitorItem.flags = null;
+            savePageMonitorItem.match = null;
+            savePageMonitorItem.replace = null;
+            savePageMonitorItem.UserId = user.id;
+            savePageMonitorItem.id = pageMonitorItem.id;
+          })
+          return Promise.all(pageMonitorItems.map(function(pageMonitorItem) {return pageMonitorItem.save();}));
+        });
+      }).then(function() {
         endDate = new Date();
         return persistence.getPageMonitorItems();
       }).then(function(pageMonitorItems) {
         assert.equal(pageMonitorItems.length, 2);
-        pageMonitorItems = pageMonitorItems.map(function(pageMonitorItem) {
+        var checkPageMonitorItems = pageMonitorItems.map(function(pageMonitorItem) {
           pageMonitorItem = pageMonitorItem.toJSON();
           assert.equal(pageMonitorItem.createdAt >= startDate, true);
-          assert.equal(pageMonitorItem.updatedAt >= startDate, true);
-          assert.equal(pageMonitorItem.createdAt <= endDate, true);
+          assert.equal(pageMonitorItem.updatedAt >= startSaveDate, true);
+          assert.equal(pageMonitorItem.createdAt <= startSaveDate, true);
           assert.equal(pageMonitorItem.updatedAt <= endDate, true);
           delete pageMonitorItem.createdAt;
           delete pageMonitorItem.updatedAt;
-          delete pageMonitorItem.id;
           return pageMonitorItem;
         });
-        assert.deepEqual(pageMonitorItems, savePageMonitorItems);
+        assert.deepEqual(checkPageMonitorItems, savePageMonitorItems);
         savePageMonitorItems[0].contents = 'contents1-updated';
         savePageMonitorItems[0].delta = 'delta1-updated';
+        var pageMonitorItem = pageMonitorItems.find(function(pageMonitorItem){ return pageMonitorItem.url === savePageMonitorItems[0].url; })
+        pageMonitorItem.contents = savePageMonitorItems[0].contents;
+        pageMonitorItem.delta = savePageMonitorItems[0].delta;
         updateStartDate = new Date();
-        return persistence.savePageMonitorItem(savePageMonitorItems[0]);
+        return pageMonitorItem.save();
       }).then(function() {
         updateEndDate = new Date();
         return persistence.getPageMonitorItems();
@@ -126,12 +198,11 @@ describe('Persistence', function() {
         pageMonitorItems = pageMonitorItems.map(function(pageMonitorItem) {
           pageMonitorItem = pageMonitorItem.toJSON();
           assert.equal(pageMonitorItem.createdAt >= startDate, true);
-          assert.equal(pageMonitorItem.createdAt <= endDate, true);
-          assert.equal(pageMonitorItem.updatedAt >= (pageMonitorItem.url === 'http://item1' ? updateStartDate : startDate), true);
+          assert.equal(pageMonitorItem.createdAt <= startSaveDate, true);
+          assert.equal(pageMonitorItem.updatedAt >= (pageMonitorItem.url === 'http://item1' ? updateStartDate : startSaveDate), true);
           assert.equal(pageMonitorItem.updatedAt <= (pageMonitorItem.url === 'http://item1' ? updateEndDate : endDate), true);
           delete pageMonitorItem.createdAt;
           delete pageMonitorItem.updatedAt;
-          delete pageMonitorItem.id;
           return pageMonitorItem;
         });
         assert.deepEqual(pageMonitorItems, savePageMonitorItems);
@@ -139,33 +210,72 @@ describe('Persistence', function() {
       }).catch(done);
     });
     it('should be able to read a specific saved page monitor item', function (done) {
-      var savePageMonitorItems = [{ url: 'http://item1', contents: 'contents1', delta: 'delta1' }, { url: 'http://item2', contents: 'contents2', delta: 'delta2' }];
-      var startDate = new Date();
+      var savePageMonitorItems = [{ url: 'http://item1', contents: 'contents1', delta: 'delta1', title: 'Item 1' }, { url: 'http://item2', contents: 'contents2', delta: 'delta2', title: 'Item 2' }];
+      var startDate, startSaveDate;
       var endDate;
-      return Promise.all(savePageMonitorItems.map(function(savePageMonitorItem){
-        return persistence.savePageMonitorItem(savePageMonitorItem);
-      })).then(function() {
+      return persistence.getUserData().then(function(userData){
+        user = userData;
+        return loadFile('pagemonitor_2_items.xml').then(function(config) {
+          user.pagemonitor = config;
+          startDate = new Date();
+          return user.save();
+        });
+      }).then(function(user) {
+        startSaveDate = new Date();
+        return persistence.getPageMonitorItems().then(function(pageMonitorItems){
+          pageMonitorItems.forEach(function(pageMonitorItem) {
+            var savePageMonitorItem = savePageMonitorItems.find(function(savePageMonitorItem){ return savePageMonitorItem.url === pageMonitorItem.url; })
+            pageMonitorItem.contents = savePageMonitorItem.contents;
+            pageMonitorItem.delta = savePageMonitorItem.delta;
+            savePageMonitorItem.flags = null;
+            savePageMonitorItem.match = null;
+            savePageMonitorItem.replace = null;
+            savePageMonitorItem.UserId = user.id;
+            savePageMonitorItem.id = pageMonitorItem.id;
+          })
+          return Promise.all(pageMonitorItems.map(function(pageMonitorItem) {return pageMonitorItem.save();}));
+        });
+      }).then(function() {
         endDate = new Date();
         return persistence.findPageMonitorItem('http://item1', 'url');
       }).then(function(pageMonitorItem) {
         var endDate = new Date();
         pageMonitorItem = pageMonitorItem.toJSON();
         assert.equal(pageMonitorItem.createdAt >= startDate, true);
-        assert.equal(pageMonitorItem.updatedAt >= startDate, true);
-        assert.equal(pageMonitorItem.createdAt <= endDate, true);
+        assert.equal(pageMonitorItem.updatedAt >= startSaveDate, true);
+        assert.equal(pageMonitorItem.createdAt <= startSaveDate, true);
         assert.equal(pageMonitorItem.updatedAt <= endDate, true);
         delete pageMonitorItem.createdAt;
         delete pageMonitorItem.updatedAt;
-        delete pageMonitorItem.id;
         assert.deepEqual(pageMonitorItem, savePageMonitorItems[0]);
         done();
       }).catch(done);
     });
     it('should not be able to read a non-existing page monitor item', function (done) {
-      var savePageMonitorItems = [{ url: 'http://item1', contents: 'contents1', delta: 'delta1' }, { url: 'http://item2', contents: 'contents2', delta: 'delta2' }];
-      return Promise.all(savePageMonitorItems.map(function(savePageMonitorItem){
-        return persistence.savePageMonitorItem(savePageMonitorItem);
-      })).then(function() {
+      var savePageMonitorItems = [{ url: 'http://item1', contents: 'contents1', delta: 'delta1', title: 'Item 1' }, { url: 'http://item2', contents: 'contents2', delta: 'delta2', title: 'Item 2' }];
+      return persistence.getUserData().then(function(userData){
+        user = userData;
+        return loadFile('pagemonitor_2_items.xml').then(function(config) {
+          user.pagemonitor = config;
+          startDate = new Date();
+          return user.save();
+        });
+      }).then(function(user) {
+        startSaveDate = new Date();
+        return persistence.getPageMonitorItems().then(function(pageMonitorItems){
+          pageMonitorItems.forEach(function(pageMonitorItem) {
+            var savePageMonitorItem = savePageMonitorItems.find(function(savePageMonitorItem){ return savePageMonitorItem.url === pageMonitorItem.url; })
+            pageMonitorItem.contents = savePageMonitorItem.contents;
+            pageMonitorItem.delta = savePageMonitorItem.delta;
+            savePageMonitorItem.flags = null;
+            savePageMonitorItem.match = null;
+            savePageMonitorItem.replace = null;
+            savePageMonitorItem.UserId = user.id;
+            savePageMonitorItem.id = pageMonitorItem.id;
+          })
+          return Promise.all(pageMonitorItems.map(function(pageMonitorItem) {return pageMonitorItem.save();}));
+        });
+      }).then(function() {
         return persistence.findPageMonitorItem('http://item3', 'url');
       }).then(function(pageMonitorItem) {
         assert.equal(pageMonitorItem, null);

@@ -3,34 +3,30 @@ var path = require('path');
 var assert = require('assert');
 
 var feedConfiguration = require('../lib/feed/configuration');
-var pagemonitorConfiguration = require('../lib/pagemonitor/configuration');
+var pagemonitorConfigparser = require('../lib/pagemonitor/configparser');
 
 describe('Configuration reader', function() {
   describe('pagemonitor', function() {
     it('should be able to parse a pagemonitor configuration', function (done) {
       return fs.readFile("./test/data/configuration/pagemonitor.xml", function(error, data){
         if(error) return done(error);
-        pagemonitorConfiguration.parseConfig(data, function(error, data) {
-          if(error) return done(error);
-          assert.deepEqual(data, {
-            pages: {
-              page: [
-                { $: { flags: "mi", match: "[\\S\\s]*Begin([\\S\\s]*)End[\\S\\s]*", replace: "$1", url: "https://site1.com" }, _: "Site 1" },
-                { $: { url: "http://site2.com" }, _: "Site 2" }
-              ]
-            }
-          });
-          return done();
-        });
+        pagemonitorConfigparser.parsePageMonitorXML(data).then(function(data) {
+          assert.deepEqual(data, [
+            { flags: "mi", match: "[\\S\\s]*Begin([\\S\\s]*)End[\\S\\s]*", replace: "$1", url: "https://site1.com", title: "Site 1" },
+            { url: "http://site2.com", title: "Site 2" }
+          ]);
+          done();
+        }).catch(done);
       });
     });
     it('should fail when parsing a bad pagemonitor configuration', function (done) {
       return fs.readFile(path.join(__dirname, 'data', 'configuration', 'pagemonitor_broken.xml'), function(error, data){
         if(error) return done(error);
-        pagemonitorConfiguration.parseConfig(data, function(error, data) {
+        pagemonitorConfigparser.parsePageMonitorXML(data).then(function(data) {
           assert.equal(undefined, data);
-          if(error) return done();
-          done(new Error("Error is not assigned"))
+          done(new Error("Error is not assigned"));
+        }).catch(function(error) {
+          return done();
         });
       });
     });

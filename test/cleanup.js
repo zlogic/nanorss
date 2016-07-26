@@ -35,25 +35,34 @@ describe('Cleanup', function() {
 
   describe('pagemonitor', function () {
     it('should delete orphaned pagemonitor items', function (done) {
-      var savePageMonitorItems = [{
+      var expectedPageMonitorItems = [{
         url: 'https://site1.com',
         contents: 'contents1',
-        delta: 'delta1'
-      }, {
-        url: 'http://delete-me',
-        contents: 'contents2',
-        delta: 'delta2'
+        delta: 'delta1',
+        flags: "mi",
+        match: "[\\S\\s]*Begin([\\S\\s]*)End[\\S\\s]*",
+        replace: "$1",
+        title: "Site 1"
       }];
-      var config;
-      return loadFile('pagemonitor.xml').then(function(data) {
-        config = data;
-        return persistence.getUserData();
-      }).then(function(user){
-        user.pagemonitor = config;
-        return user.save();
-      }).then(Promise.all(savePageMonitorItems.map(function(savePageMonitorItem) {
-        return persistence.savePageMonitorItem(savePageMonitorItem);
-      }))).then(function() {
+      var user;
+      return persistence.getUserData().then(function(userData){
+        user = userData;
+        return loadFile('pagemonitor.xml').then(function(config) {
+          user.pagemonitor = config;
+          return user.save();
+        });
+      }).then(function(user) {
+        return user.getPageMonitorItems().then(function(pageMonitorItems){
+          return pageMonitorItems.find(function(pageMonitorItem){
+            return pageMonitorItem.url === expectedPageMonitorItems[0].url;
+          }).update({delta: expectedPageMonitorItems[0].delta, contents: expectedPageMonitorItems[0].contents});
+        });
+      }).then(function() {
+        return loadFile('pagemonitor_updated.xml').then(function(config) {
+          user.pagemonitor = config;
+          return user.save();
+        });
+      }).then(function(user) {
         return pagemonitor.cleanup();
       }).then(function() {
         return persistence.getPageMonitorItems();
@@ -63,34 +72,49 @@ describe('Cleanup', function() {
           delete pageMonitorItem.createdAt;
           delete pageMonitorItem.updatedAt;
           delete pageMonitorItem.id;
+          delete pageMonitorItem.UserId;
           return pageMonitorItem;
         });
-        savePageMonitorItems.splice(1, 1);
-        assert.deepEqual(pageMonitorItems, savePageMonitorItems);
+        assert.deepEqual(pageMonitorItems, expectedPageMonitorItems);
         done();
       }).catch(done);
     });
 
     it('should do nothing with pagemonitor items if no orphaned items were found', function (done) {
-      var savePageMonitorItems = [{
+      var expectedPageMonitorItems = [{
         url: 'https://site1.com',
         contents: 'contents1',
-        delta: 'delta1'
+        delta: 'delta1',
+        flags: "mi",
+        match: "[\\S\\s]*Begin([\\S\\s]*)End[\\S\\s]*",
+        replace: "$1",
+        title: "Site 1"
       }, {
         url: 'http://site2.com',
         contents: 'contents2',
-        delta: 'delta2'
+        delta: 'delta2',
+        flags: null,
+        match: null,
+        replace: null,
+        title: "Site 2"
       }];
-      var config;
-      return loadFile('pagemonitor.xml').then(function(data) {
-        config = data;
-        return persistence.getUserData();
-      }).then(function(user){
-        user.pagemonitor = config;
-        return user.save();
-      }).then(Promise.all(savePageMonitorItems.map(function(savePageMonitorItem) {
-        return persistence.savePageMonitorItem(savePageMonitorItem);
-      }))).then(function() {
+      var user;
+      return persistence.getUserData().then(function(userData){
+        user = userData;
+        return loadFile('pagemonitor.xml').then(function(config) {
+          user.pagemonitor = config;
+          return user.save();
+        });
+      }).then(function(user) {
+        return user.getPageMonitorItems().then(function(pageMonitorItems){
+          return Promise.all(expectedPageMonitorItems.map(function(expectedItem){
+            var update = {delta: expectedItem.delta, contents: expectedItem.contents};
+            return pageMonitorItems.find(function(pageMonitorItem) {
+              return pageMonitorItem.url === expectedItem.url;
+            }).update(update);
+          }));
+        });
+      }).then(function() {
         return pagemonitor.cleanup();
       }).then(function() {
         return persistence.getPageMonitorItems();
@@ -100,9 +124,10 @@ describe('Cleanup', function() {
           delete pageMonitorItem.createdAt;
           delete pageMonitorItem.updatedAt;
           delete pageMonitorItem.id;
+          delete pageMonitorItem.UserId;
           return pageMonitorItem;
         });
-        assert.deepEqual(pageMonitorItems, savePageMonitorItems);
+        assert.deepEqual(pageMonitorItems, expectedPageMonitorItems);
         done();
       }).catch(done);
     });

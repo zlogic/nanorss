@@ -2,7 +2,6 @@ var express = require('express');
 var i18n = require('i18n');
 var persistence = require('../lib/services/persistence');
 var logger = require('../lib/services/logger');
-var pagemonitorConfiguration = require('../lib/pagemonitor/configuration');
 var feedConfiguration = require('../lib/feed/configuration');
 var Promise = require('bluebird').Promise;
 var passport = require('passport');
@@ -14,29 +13,19 @@ router.use(passport.authenticate('bearer', { session: false }));
 /* GET home page. */
 router.get('/', function(req, res, next) {
   var processPagemonitorData = new Promise(function(resolve, reject){
-    pagemonitorConfiguration.parseConfig(req.user.pagemonitor, function(err, pagemonitorconfiguration){
-      if(err)
-        return reject(err);
-      var findPageMonitorConfiguration = function(url){
-        return pagemonitorconfiguration.pages.page.find(function(page){
-          return page.$.url === url;
-        });
-      };
-      persistence.getPageMonitorItems().then(function(monitoredPages){
-        var monitoredPagesItems = monitoredPages.map(function(page){
-          var pageMonitorConfiguration = findPageMonitorConfiguration(page.url);
-          var pageTitle = (pageMonitorConfiguration !== undefined )? pageMonitorConfiguration._ : undefined;
-          return {
-            sortBy: new Date(page.updatedAt).getTime(),
-            title: pageTitle,
-            origin: pageTitle,
-            fetchUrl: 'pagemonitor/' + encodeURIComponent(page.id),
-            url: page.url
-          };
-        });
-        resolve(monitoredPagesItems);
-      }).catch(reject);
-    });
+    persistence.getPageMonitorItems().then(function(monitoredPages){
+      var monitoredPagesItems = monitoredPages.map(function(page){
+        var pageTitle = page.title;
+        return {
+          sortBy: new Date(page.updatedAt).getTime(),
+          title: pageTitle,
+          origin: pageTitle,
+          fetchUrl: 'pagemonitor/' + encodeURIComponent(page.id),
+          url: page.url
+        };
+      });
+      resolve(monitoredPagesItems);
+    }).catch(reject);
   });
   var processFeedData = new Promise(function(resolve, reject){
     feedConfiguration.parseGetUrlNames(req.user.opml, function(err, feedNames){

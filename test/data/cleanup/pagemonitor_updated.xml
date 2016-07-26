@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pages>
+	<page url="https://site1.com" match="[\S\s]*Begin([\S\s]*)End[\S\s]*" replace="$1" flags="mi">Site 1</page>
+</pages>

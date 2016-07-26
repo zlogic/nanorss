@@ -1,8 +1,6 @@
 var express = require('express');
 var i18n = require('i18n');
 var persistence = require('../lib/services/persistence');
-var pagemonitorConfiguration = require('../lib/pagemonitor/configuration');
-var feedConfiguration = require('../lib/feed/configuration');
 var Promise = require('bluebird').Promise;
 var router = express.Router();
 
