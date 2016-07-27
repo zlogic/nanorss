@@ -2,7 +2,6 @@ var express = require('express');
 var i18n = require('i18n');
 var persistence = require('../lib/services/persistence');
 var logger = require('../lib/services/logger');
-var feedConfiguration = require('../lib/feed/configuration');
 var Promise = require('bluebird').Promise;
 var passport = require('passport');
 var router = express.Router();
@@ -12,40 +11,32 @@ router.use(passport.authenticate('bearer', { session: false }));
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  var processPagemonitorData = new Promise(function(resolve, reject){
-    persistence.getPageMonitorItems().then(function(monitoredPages){
-      var monitoredPagesItems = monitoredPages.map(function(page){
-        var pageTitle = page.title;
+  var processPagemonitorData = persistence.getPageMonitorItems().then(function(monitoredPages){
+    var monitoredPagesItems = monitoredPages.map(function(page){
+      var pageTitle = page.title;
+      return {
+        sortBy: new Date(page.updatedAt).getTime(),
+        title: pageTitle,
+        origin: pageTitle,
+        fetchUrl: 'pagemonitor/' + encodeURIComponent(page.id),
+        url: page.url
+      };
+    });
+    return monitoredPagesItems;
+  });
+  var processFeedData = persistence.getUserFeeds().then(function(userFeeds){
+    return userFeeds.map(function(userFeed){
+      return userFeed.Feed.FeedItems.map(function(feedItem) {
         return {
-          sortBy: new Date(page.updatedAt).getTime(),
-          title: pageTitle,
-          origin: pageTitle,
-          fetchUrl: 'pagemonitor/' + encodeURIComponent(page.id),
-          url: page.url
+          sortBy: Math.min(new Date(feedItem.createdAt).getTime(), new Date(feedItem.date).getTime()),
+          title: feedItem.title,
+          origin: userFeed.title,
+          fetchUrl: 'feeditem/' + feedItem.id,
+          url: feedItem.url
         };
       });
-      resolve(monitoredPagesItems);
-    }).catch(reject);
-  });
-  var processFeedData = new Promise(function(resolve, reject){
-    feedConfiguration.parseGetUrlNames(req.user.opml, function(err, feedNames){
-      if(err)
-        return reject(err);
-      persistence.getFeedItems().then(function(feedItems){
-        var feedItems = feedItems.map(function(feedItem){
-          var feedName = feedNames[feedItem.Feed.url];
-          if(feedName === undefined)
-            return undefined;
-          return {
-            sortBy: Math.min(new Date(feedItem.createdAt).getTime(), new Date(feedItem.date).getTime()),
-            title: feedItem.title,
-            origin: feedName,
-            fetchUrl: 'feeditem/' + feedItem.id,
-            url: feedItem.url
-          };
-        }).filter(function(feedItem){ return feedItem !== undefined;});
-        resolve(feedItems);
-      }).catch(reject);
+    }).reduce(function(a, b) {
+      return a.concat(b);
     });
   });
   return Promise.all([processPagemonitorData, processFeedData]).then(function(items){
@@ -58,7 +49,8 @@ router.get('/', function(req, res, next) {
     res.render('user', {
       items: items
     });
-  }).catch(function() {
+  }).catch(function(err) {
+    logger.logException(err);
     res.render('user', { items: [] });
   });
 });

@@ -11,7 +11,7 @@ var tokenHeader = serviceBase.tokenHeader;
 
 var prepopulate = function() {
   return persistence.getUserData().then(function(user){
-    user.opml = "opml";
+    user.opml = "<opml/>";
     user.pagemonitor = "<pagemonitor/>";
     user.password = "pass";
     return user.save();
@@ -61,7 +61,7 @@ describe('Service', function() {
             try {
               assert.ok(result);
               assert.equal(result.status, 200);
-              assert.deepEqual(result.body, { username: 'default', opml: 'opml', pagemonitor: '<pagemonitor/>' });
+              assert.deepEqual(result.body, { username: 'default', opml: '<opml/>', pagemonitor: '<pagemonitor/>' });
               done();
             } catch(err) {done(err);}
           });
@@ -82,7 +82,7 @@ describe('Service', function() {
               assert.deepEqual(result.body, {});
               persistence.getUserData().then(function(user){
                 assert.equal(user.username, 'default-1');
-                assert.equal(user.opml, 'opml');
+                assert.equal(user.opml, '<opml/>');
                 assert.equal(user.pagemonitor, '<pagemonitor/>');
                 return user.verifyPassword('pass').then(function(passwordValid){
                   try {
@@ -110,7 +110,7 @@ describe('Service', function() {
               assert.deepEqual(result.body, {});
               persistence.getUserData().then(function(user){
                 assert.equal(user.username, 'default');
-                assert.equal(user.opml, 'opml');
+                assert.equal(user.opml, '<opml/>');
                 assert.equal(user.pagemonitor, '<pagemonitor/>');
                 return user.verifyPassword('pass-1').then(function(passwordValid){
                   try {
@@ -138,7 +138,7 @@ describe('Service', function() {
               assert.deepEqual(result.body, {});
               persistence.getUserData().then(function(user){
                 assert.equal(user.username, 'default-1');
-                assert.equal(user.opml, 'opml');
+                assert.equal(user.opml, '<opml/>');
                 assert.equal(user.pagemonitor, '<pagemonitor/>');
                 return user.verifyPassword('pass-1').then(function(passwordValid){
                   try {
@@ -213,7 +213,7 @@ describe('Service', function() {
             try {
               assert.ok(result);
               assert.equal(result.status, 200);
-              assert.deepEqual(result.body, { username: 'default', opml: 'opml', pagemonitor: '<pagemonitor/>' });
+              assert.deepEqual(result.body, { username: 'default', opml: '<opml/>', pagemonitor: '<pagemonitor/>' });
               done();
             } catch(err) {done(err);}
           });

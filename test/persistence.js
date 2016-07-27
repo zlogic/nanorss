@@ -35,13 +35,13 @@ describe('Persistence', function() {
       return persistence.getUserData().then(function(user){
         assert.equal(user.username, 'default');
         user.password = 'pass';
-        user.opml = 'opml';
+        user.opml = '<opml/>';
         user.pagemonitor = '<pagemonitor/>';
         return user.save();
       }).then(function(){
         return persistence.getUserData().then(function(user){
           assert.equal(user.username, 'default');
-          assert.equal(user.opml, 'opml');
+          assert.equal(user.opml, '<opml/>');
           assert.equal(user.pagemonitor, '<pagemonitor/>');
           user.verifyPassword('pass').then(function(passwordValid){
             assert.equal(passwordValid, true);

@@ -251,7 +251,7 @@ describe('Fetcher', function() {
         {url: 'http://sites-site1.com', file: 'rss1.xml'},
         {url: 'http://updates-site2.com', file: 'rss2.xml'}
       ];
-      var startDate, endDate;
+      var userSaveStartDate, startDate, endDate;
       return Promise.all(feedFiles.map(function(feedFile) {
         return loadFile(feedFile.file);
       })).then(function(loadedFiles) {
@@ -264,6 +264,7 @@ describe('Fetcher', function() {
         return persistence.getUserData();
       }).then(function(user){
         user.opml = config;
+        userSaveStartDate = new Date();
         return user.save();
       }).then(function() {
         startDate = new Date();
@@ -274,10 +275,10 @@ describe('Fetcher', function() {
       }).then(function(feeds) {
         assert.equal(feeds.length, 2);
         feeds = feeds.map(function(feed) {
-          assert.equal(feed.createdAt >= startDate, true);
-          assert.equal(feed.updatedAt >= startDate, true);
-          assert.equal(feed.createdAt <= endDate, true);
-          assert.equal(feed.updatedAt <= endDate, true);
+          assert.equal(feed.createdAt >= userSaveStartDate, true);
+          assert.equal(feed.updatedAt >= userSaveStartDate, true);
+          assert.equal(feed.createdAt <= startDate, true);
+          assert.equal(feed.updatedAt <= startDate, true);
           feed = feed.toJSON();
           feed.FeedItems.forEach(function(feedItem){
             assert.equal(feedItem.createdAt >= startDate, true);
@@ -313,7 +314,7 @@ describe('Fetcher', function() {
     });
     it('should poll newly added Atom feeds', function (done) {
       var config;
-      var startDate, endDate;
+      var userSaveStartDate, startDate, endDate;
       return loadFile('atom.xml').then(function(loadedFile) {
         nock('http://sites-site1.com').get('/').once().reply(200, loadedFile);
         return loadFile('opml_one.xml');
@@ -322,6 +323,7 @@ describe('Fetcher', function() {
         return persistence.getUserData();
       }).then(function(user){
         user.opml = config;
+        userSaveStartDate = new Date();
         return user.save();
       }).then(function() {
         startDate = new Date();
@@ -332,10 +334,10 @@ describe('Fetcher', function() {
       }).then(function(feeds) {
         assert.equal(feeds.length, 1);
         feeds = feeds.map(function(feed) {
-          assert.equal(feed.createdAt >= startDate, true);
-          assert.equal(feed.updatedAt >= startDate, true);
-          assert.equal(feed.createdAt <= endDate, true);
-          assert.equal(feed.updatedAt <= endDate, true);
+          assert.equal(feed.createdAt >= userSaveStartDate, true);
+          assert.equal(feed.updatedAt >= userSaveStartDate, true);
+          assert.equal(feed.createdAt <= startDate, true);
+          assert.equal(feed.updatedAt <= startDate, true);
           feed = feed.toJSON();
           feed.FeedItems.forEach(function(feedItem){
             assert.equal(feedItem.createdAt >= startDate, true);
@@ -366,7 +368,7 @@ describe('Fetcher', function() {
     });
     it('should poll newly added RDF feeds', function (done) {
       var config;
-      var startDate, endDate;
+      var userSaveStartDate, startDate, endDate;
       return loadFile('rdf.xml').then(function(loadedFile) {
         nock('http://sites-site1.com').get('/').once().reply(200, loadedFile);
         return loadFile('opml_one.xml');
@@ -375,6 +377,7 @@ describe('Fetcher', function() {
         return persistence.getUserData();
       }).then(function(user){
         user.opml = config;
+        userSaveStartDate = new Date();
         return user.save();
       }).then(function() {
         startDate = new Date();
@@ -385,10 +388,10 @@ describe('Fetcher', function() {
       }).then(function(feeds) {
         assert.equal(feeds.length, 1);
         feeds = feeds.map(function(feed) {
-          assert.equal(feed.createdAt >= startDate, true);
-          assert.equal(feed.updatedAt >= startDate, true);
-          assert.equal(feed.createdAt <= endDate, true);
-          assert.equal(feed.updatedAt <= endDate, true);
+          assert.equal(feed.createdAt >= userSaveStartDate, true);
+          assert.equal(feed.updatedAt >= userSaveStartDate, true);
+          assert.equal(feed.createdAt <= startDate, true);
+          assert.equal(feed.updatedAt <= startDate, true);
           feed = feed.toJSON();
           feed.FeedItems.forEach(function(feedItem){
             assert.equal(feedItem.createdAt >= startDate, true);
@@ -420,7 +423,7 @@ describe('Fetcher', function() {
       ];
       var notUpdatedLinks = ['http://site1/link1', 'http://site1/link3'];
       var newItems = ['http://site1/link3-updated', 'http://site1/link5'];
-      var startDate, updateDate, endDate;
+      var userSaveStartDate, startDate, updateDate, endDate;
       return Promise.all(feedFiles.map(function(feedFile) {
         return loadFile(feedFile.file);
       })).then(function(loadedFiles) {
@@ -433,6 +436,7 @@ describe('Fetcher', function() {
         return persistence.getUserData();
       }).then(function(user){
         user.opml = config;
+        userSaveStartDate = new Date();
         return user.save();
       }).then(function() {
         startDate = new Date();
@@ -446,10 +450,10 @@ describe('Fetcher', function() {
       }).then(function(feeds) {
         assert.equal(feeds.length, 2);
         feeds = feeds.map(function(feed) {
-          assert.equal(feed.createdAt >= startDate, true);
-          assert.equal(feed.updatedAt >= startDate, true);
-          assert.equal(feed.createdAt <= endDate, true);
-          assert.equal(feed.updatedAt <= endDate, true);
+          assert.equal(feed.createdAt >= userSaveStartDate, true);
+          assert.equal(feed.updatedAt >= userSaveStartDate, true);
+          assert.equal(feed.createdAt <= startDate, true);
+          assert.equal(feed.updatedAt <= startDate, true);
           feed = feed.toJSON();
           feed.FeedItems.forEach(function(feedItem){
             assert.equal(feedItem.createdAt >= (newItems.includes(feedItem.url) ? updateDate : startDate), true);
@@ -498,7 +502,7 @@ describe('Fetcher', function() {
         {url: 'http://sites-site1.com', file: 'rss1.xml'},
         {url: 'http://updates-site2.com', file: 'rss2.xml'}
       ];
-      var startDate, failPollStartDate, failPollEndDate, finalPollStartDate, endDate;
+      var userSaveStartDate, startDate, failPollStartDate, failPollEndDate, finalPollStartDate, endDate;
       return Promise.all(feedFiles.map(function(feedFile) {
         return loadFile(feedFile.file);
       })).then(function(loadedFiles) {
@@ -516,6 +520,7 @@ describe('Fetcher', function() {
         return persistence.getUserData();
       }).then(function(user){
         user.opml = config;
+        userSaveStartDate = new Date();
         return user.save();
       }).then(function() {
         startDate = new Date();
@@ -529,10 +534,10 @@ describe('Fetcher', function() {
       }).then(function(feeds) {
         assert.equal(feeds.length, 2);
         feeds = feeds.map(function(feed) {
-          assert.equal(feed.createdAt >= startDate, true);
-          assert.equal(feed.updatedAt >= startDate, true);
-          assert.equal(feed.createdAt <= failPollStartDate, true);
-          assert.equal(feed.updatedAt <= failPollStartDate, true);
+          assert.equal(feed.createdAt >= userSaveStartDate, true);
+          assert.equal(feed.updatedAt >= userSaveStartDate, true);
+          assert.equal(feed.createdAt <= startDate, true);
+          assert.equal(feed.updatedAt <= startDate, true);
           feed = feed.toJSON();
           feed.FeedItems.forEach(function(feedItem){
             assert.equal(feedItem.createdAt >= startDate, true);
@@ -571,10 +576,10 @@ describe('Fetcher', function() {
       }).then(function(feeds) {
         assert.equal(feeds.length, 2);
         feeds = feeds.map(function(feed) {
-          assert.equal(feed.createdAt >= startDate, true);
-          assert.equal(feed.updatedAt >= startDate, true);
-          assert.equal(feed.createdAt <= failPollStartDate, true);
-          assert.equal(feed.updatedAt <= failPollStartDate, true);
+          assert.equal(feed.createdAt >= userSaveStartDate, true);
+          assert.equal(feed.updatedAt >= userSaveStartDate, true);
+          assert.equal(feed.createdAt <= startDate, true);
+          assert.equal(feed.updatedAt <= startDate, true);
           feed = feed.toJSON();
           feed.FeedItems.forEach(function(feedItem){
             assert.equal(feedItem.createdAt >= startDate, true);

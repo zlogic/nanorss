@@ -177,7 +177,7 @@ describe('Cleanup', function() {
           delete feed.updatedAt;
           return feed;
         });
-        assert.deepEqual(feeds, [{url: 'http://sites-site1.com', FeedItems: saveFeedItems}]);
+        assert.deepEqual(feeds, [{url: 'http://sites-site1.com', FeedItems: saveFeedItems}, {url: 'http://updates-site2.com', FeedItems: []}]);
         done();
       }).catch(done);
     });
@@ -273,7 +273,7 @@ describe('Cleanup', function() {
           delete feed.updatedAt;
           return feed;
         });
-        assert.deepEqual(feeds, [{url: 'http://sites-site1.com', FeedItems: saveFeedItems1}]);
+        assert.deepEqual(feeds, [{url: 'http://sites-site1.com', FeedItems: saveFeedItems1}, {url: 'http://updates-site2.com', FeedItems: []}]);
         done();
       }).catch(done);
     });
@@ -318,7 +318,7 @@ describe('Cleanup', function() {
           delete feed.updatedAt;
           return feed;
         });
-        assert.deepEqual(feeds, [{url: 'http://sites-site1.com', FeedItems: saveFeedItems}]);
+        assert.deepEqual(feeds, [{url: 'http://sites-site1.com', FeedItems: saveFeedItems}, {url: 'http://updates-site2.com', FeedItems: []}]);
         done();
       }).catch(done);
     });
