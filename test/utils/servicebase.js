@@ -39,11 +39,9 @@ var hooks = function(){
     server.close(done);
   });
 
-  beforeEach(function(done) {
+  beforeEach(function() {
     logger.info(this.currentTest.fullTitle());
-    return persistence.init({force: true}).then(function(){
-      done();
-    });
+    return persistence.init({force: true});
   });
 }
 

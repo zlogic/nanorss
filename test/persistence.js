@@ -17,21 +17,18 @@ var loadFile = function(filename) {
 };
 
 describe('Persistence', function() {
-  beforeEach(function(done) {
+  beforeEach(function() {
     logger.info(this.currentTest.fullTitle());
-    return persistence.init({force: true}).then(function(){
-      done();
-    });
+    return persistence.init({force: true});
   });
 
   describe('user', function () {
-    it('should create a new user with an empty database', function (done) {
+    it('should create a new user with an empty database', function () {
       return persistence.getUserData().then(function(user){
         assert.equal(user.username, 'default');
-        done();
-      }).catch(done);
+      });
     });
-    it('should be able to change user preferences', function (done) {
+    it('should be able to change user preferences', function () {
       return persistence.getUserData().then(function(user){
         assert.equal(user.username, 'default');
         user.password = 'pass';
@@ -46,14 +43,13 @@ describe('Persistence', function() {
           user.verifyPassword('pass').then(function(passwordValid){
             assert.equal(passwordValid, true);
           });
-          done();
-        })
-      }).catch(done);
+        });
+      });
     });
   });
 
   describe('pagemonitor', function () {
-    it('should be able to save a page monitor item', function (done) {
+    it('should be able to save a page monitor item', function () {
       var savePageMonitorItem = {
         url: 'http://item',
         contents: 'contents',
@@ -91,10 +87,9 @@ describe('Persistence', function() {
         delete pageMonitorItem.updatedAt;
         delete pageMonitorItem.id;
         assert.deepEqual(pageMonitorItem, savePageMonitorItem);
-        done();
-      }).catch(done);
+      });
     });
-    it('should be able to read all saved page monitor items', function (done) {
+    it('should be able to read all saved page monitor items', function () {
       var savePageMonitorItems = [{ url: 'http://item1', contents: 'contents1', delta: 'delta1', title: 'Item 1' }, { url: 'http://item2', contents: 'contents2', delta: 'delta2', title: 'Item 2' }];
       var startDate, startSaveDate;
       var endDate;
@@ -136,10 +131,9 @@ describe('Persistence', function() {
           return pageMonitorItem;
         });
         assert.deepEqual(pageMonitorItems, savePageMonitorItems);
-        done();
-      }).catch(done);
+      });
     });
-    it('should be able to update a saved page monitor item', function (done) {
+    it('should be able to update a saved page monitor item', function () {
       var savePageMonitorItems = [{ url: 'http://item1', contents: 'contents1', delta: 'delta1', title: 'Item 1' }, { url: 'http://item2', contents: 'contents2', delta: 'delta2', title: 'Item 2' }];
       var startDate, startSaveDate;
       var endDate;
@@ -206,10 +200,9 @@ describe('Persistence', function() {
           return pageMonitorItem;
         });
         assert.deepEqual(pageMonitorItems, savePageMonitorItems);
-        done();
-      }).catch(done);
+      });
     });
-    it('should be able to read a specific saved page monitor item', function (done) {
+    it('should be able to read a specific saved page monitor item', function () {
       var savePageMonitorItems = [{ url: 'http://item1', contents: 'contents1', delta: 'delta1', title: 'Item 1' }, { url: 'http://item2', contents: 'contents2', delta: 'delta2', title: 'Item 2' }];
       var startDate, startSaveDate;
       var endDate;
@@ -248,10 +241,9 @@ describe('Persistence', function() {
         delete pageMonitorItem.createdAt;
         delete pageMonitorItem.updatedAt;
         assert.deepEqual(pageMonitorItem, savePageMonitorItems[0]);
-        done();
-      }).catch(done);
+      });
     });
-    it('should not be able to read a non-existing page monitor item', function (done) {
+    it('should not be able to read a non-existing page monitor item', function () {
       var savePageMonitorItems = [{ url: 'http://item1', contents: 'contents1', delta: 'delta1', title: 'Item 1' }, { url: 'http://item2', contents: 'contents2', delta: 'delta2', title: 'Item 2' }];
       return persistence.getUserData().then(function(userData){
         user = userData;
@@ -279,13 +271,12 @@ describe('Persistence', function() {
         return persistence.findPageMonitorItem('http://item3', 'url');
       }).then(function(pageMonitorItem) {
         assert.equal(pageMonitorItem, null);
-        done();
-      }).catch(done);
+      });
     });
   });
 
   describe('feed', function () {
-    it('should be able to save a feed', function (done) {
+    it('should be able to save a feed', function () {
       var saveFeedItems = [
         {guid: 'Guid-01', title: 'Title 1', date: new Date('2014-01-01T12:34:56'), contents: 'Contents 1', url: 'http://feed1/item1'},
         {guid: 'Guid-02', title: 'Title 2', date: new Date('2014-01-02T12:34:56'), contents: 'Contents 2', url: 'http://feed1/item2'}
@@ -311,10 +302,9 @@ describe('Persistence', function() {
         feedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
         saveFeedItems.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed1'; });
         assert.deepEqual(feedItems, saveFeedItems);
-        done();
-      }).catch(done);
+      });
     });
-    it('should be able to read all saved feed items', function (done) {
+    it('should be able to read all saved feed items', function () {
       var saveFeedItems1 = [
         {guid: 'Guid-01', title: 'Title 1', date: new Date('2014-01-01T12:34:56'), contents: 'Contents 1', url: 'http://feed1/item1'},
         {guid: 'Guid-02', title: 'Title 2', date: new Date('2014-01-02T12:34:56'), contents: 'Contents 2', url: 'http://feed1/item2'}
@@ -354,10 +344,9 @@ describe('Persistence', function() {
         saveFeedItems1.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed1'; });
         saveFeedItems2.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed2'; });
         assert.deepEqual(feedItems, saveFeedItems1.concat(saveFeedItems2));
-        done();
-      }).catch(done);
+      });
     });
-    it('should be able to read all saved feeds', function (done) {
+    it('should be able to read all saved feeds', function () {
       var saveFeedItems1 = [
         {guid: 'Guid-01', title: 'Title 1', date: new Date('2014-01-01T12:34:56'), contents: 'Contents 1', url: 'http://feed1/item1'},
         {guid: 'Guid-02', title: 'Title 2', date: new Date('2014-01-02T12:34:56'), contents: 'Contents 2', url: 'http://feed1/item2'}
@@ -400,10 +389,9 @@ describe('Persistence', function() {
         saveFeedItems1.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed1'; });
         saveFeedItems2.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed2'; });
         assert.deepEqual(feeds, [{url:'http://feed1', FeedItems: saveFeedItems1}, {url:'http://feed2', FeedItems: saveFeedItems2}]);
-        done();
-      }).catch(done);
+      });
     });
-    it('should be able to update a saved feed item', function (done) {
+    it('should be able to update a saved feed item', function () {
       var saveFeedItems1 = [
         {guid: 'Guid-01', title: 'Title 1', date: new Date('2014-01-01T12:34:56'), contents: 'Contents 1', url: 'http://feed1/item1'},
         {guid: 'Guid-02', title: 'Title 2', date: new Date('2014-01-02T12:34:56'), contents: 'Contents 2', url: 'http://feed1/item2'}
@@ -487,10 +475,9 @@ describe('Persistence', function() {
         });
         saveFeedItems1.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed1'; });
         assert.deepEqual(feeds, [{url:'http://feed1', FeedItems: saveFeedItems1}, {url:'http://feed2', FeedItems: saveFeedItems2}]);
-        done();
-      }).catch(done);
+      });
     });
-    it('should be able to add items to feed', function (done) {
+    it('should be able to add items to feed', function () {
       var saveFeedItems1 = [
         {guid: 'Guid-01', title: 'Title 1', date: new Date('2014-01-01T12:34:56'), contents: 'Contents 1', url: 'http://feed1/item1'},
         {guid: 'Guid-02', title: 'Title 2', date: new Date('2014-01-02T12:34:56'), contents: 'Contents 2', url: 'http://feed1/item2'}
@@ -572,10 +559,9 @@ describe('Persistence', function() {
         saveFeedItems1.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed1'; });
         saveFeedItems2.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed2'; });
         assert.deepEqual(feeds, [{url:'http://feed1', FeedItems: saveFeedItems1}, {url:'http://feed2', FeedItems: saveFeedItems2}]);
-        done();
-      }).catch(done);
+      });
     });
-    it('should be able to read a specific saved feed item', function (done) {
+    it('should be able to read a specific saved feed item', function () {
       var saveFeedItems1 = [
         {guid: 'Guid-01', title: 'Title 1', date: new Date('2014-01-01T12:34:56'), contents: 'Contents 1', url: 'http://feed1/item1'},
         {guid: 'Guid-02', title: 'Title 2', date: new Date('2014-01-02T12:34:56'), contents: 'Contents 2', url: 'http://feed1/item2'}
@@ -608,10 +594,9 @@ describe('Persistence', function() {
         delete feedItem.id;
         saveFeedItems1[0].FeedUrl = 'http://feed1';
         assert.deepEqual(feedItem, saveFeedItems1[0]);
-        done();
-      }).catch(done);
+      });
     });
-    it('should not be able to read a non-existing feed item', function (done) {
+    it('should not be able to read a non-existing feed item', function () {
       var saveFeedItems1 = [
         {guid: 'Guid-01', title: 'Title 1', date: new Date('2014-01-01T12:34:56'), contents: 'Contents 1', url: 'http://feed1/item1'},
         {guid: 'Guid-02', title: 'Title 2', date: new Date('2014-01-02T12:34:56'), contents: 'Contents 2', url: 'http://feed1/item2'}
@@ -631,8 +616,7 @@ describe('Persistence', function() {
         return persistence.findFeedItem(maxId + 1);
       }).then(function(feedItem) {
         assert.equal(feedItem, null);
-        done();
-      }).catch(done);
+      });
     });
   });
 });

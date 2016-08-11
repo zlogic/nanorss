@@ -21,11 +21,9 @@ var loadFile = function(filename) {
 describe('Cleanup', function() {
   var oneSecond = 1 / (24 * 60 * 60);
 
-  beforeEach(function(done) {
+  beforeEach(function() {
     logger.info(this.currentTest.fullTitle());
-    return persistence.init({force: true}).then(function(){
-      done();
-    });
+    return persistence.init({force: true});
   });
 
   afterEach(function(done) {
@@ -34,7 +32,7 @@ describe('Cleanup', function() {
   });
 
   describe('pagemonitor', function () {
-    it('should delete orphaned pagemonitor items', function (done) {
+    it('should delete orphaned pagemonitor items', function () {
       var expectedPageMonitorItems = [{
         url: 'https://site1.com',
         contents: 'contents1',
@@ -76,11 +74,10 @@ describe('Cleanup', function() {
           return pageMonitorItem;
         });
         assert.deepEqual(pageMonitorItems, expectedPageMonitorItems);
-        done();
-      }).catch(done);
+      });
     });
 
-    it('should do nothing with pagemonitor items if no orphaned items were found', function (done) {
+    it('should do nothing with pagemonitor items if no orphaned items were found', function () {
       var expectedPageMonitorItems = [{
         url: 'https://site1.com',
         contents: 'contents1',
@@ -128,13 +125,12 @@ describe('Cleanup', function() {
           return pageMonitorItem;
         });
         assert.deepEqual(pageMonitorItems, expectedPageMonitorItems);
-        done();
-      }).catch(done);
+      });
     });
   });
 
   describe('feed', function () {
-    it('should delete expired feed items', function (done) {
+    it('should delete expired feed items', function () {
       this.timeout(4000);
       process.env.ITEM_EXPIRE_DAYS = oneSecond.toString();
       var saveFeedItems = [
@@ -178,10 +174,9 @@ describe('Cleanup', function() {
           return feed;
         });
         assert.deepEqual(feeds, [{url: 'http://sites-site1.com', FeedItems: saveFeedItems}, {url: 'http://updates-site2.com', FeedItems: []}]);
-        done();
-      }).catch(done);
+      });
     });
-    it('should delete expired feeds', function (done) {
+    it('should delete expired feeds', function () {
       this.timeout(4000);
       process.env.ITEM_EXPIRE_DAYS = oneSecond.toString();
       var saveFeedItems1 = [
@@ -229,10 +224,9 @@ describe('Cleanup', function() {
           return feed;
         });
         assert.deepEqual(feeds, [{url: 'http://sites-site1.com', FeedItems: saveFeedItems1}, {url: 'http://updates-site2.com', FeedItems: []}]);
-        done();
-      }).catch(done);
+      });
     });
-    it('should delete feeds absent from configuration file', function (done) {
+    it('should delete feeds absent from configuration file', function () {
       this.timeout(4000);
       process.env.ITEM_EXPIRE_DAYS = oneSecond.toString();
       var saveFeedItems1 = [
@@ -274,10 +268,9 @@ describe('Cleanup', function() {
           return feed;
         });
         assert.deepEqual(feeds, [{url: 'http://sites-site1.com', FeedItems: saveFeedItems1}, {url: 'http://updates-site2.com', FeedItems: []}]);
-        done();
-      }).catch(done);
+      });
     });
-    it('should do nothing with feed items or feeds if none have expired', function (done) {
+    it('should do nothing with feed items or feeds if none have expired', function () {
       this.timeout(4000);
       process.env.ITEM_EXPIRE_DAYS = oneSecond.toString();
       var saveFeedItems = [
@@ -319,8 +312,7 @@ describe('Cleanup', function() {
           return feed;
         });
         assert.deepEqual(feeds, [{url: 'http://sites-site1.com', FeedItems: saveFeedItems}, {url: 'http://updates-site2.com', FeedItems: []}]);
-        done();
-      }).catch(done);
+      });
     });
   });
 });

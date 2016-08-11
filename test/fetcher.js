@@ -22,14 +22,12 @@ var loadFile = function(filename) {
 };
 
 describe('Fetcher', function() {
-  beforeEach(function(done) {
+  beforeEach(function() {
     logger.info(this.currentTest.fullTitle());
-    return persistence.init({force: true}).then(function(){
-      done();
-    });
+    return persistence.init({force: true});
   });
   describe('pagemonitor', function() {
-    it('should poll newly added pages', function (done) {
+    it('should poll newly added pages', function () {
       //this.timeout(60000);
       var config;
       var pages = [
@@ -73,10 +71,9 @@ describe('Fetcher', function() {
         assert.equal(pageMonitorItems[1].delta, '@@ -1,1 +1,1 @@\n-\n+Page 2 text\n');
         assert.equal(pageMonitorItems[0].contents, '\n\nSome text\nAnother line\n');
         assert.equal(pageMonitorItems[1].contents, 'Page 2 text');
-        done();
-      }).catch(done);
+      });
     });
-    it('should handle updates with changes in unmonitored sections', function (done) {
+    it('should handle updates with changes in unmonitored sections', function () {
       var config;
       var pages = [
         {url: 'https://site1.com', file: 'page1.html'},
@@ -123,10 +120,9 @@ describe('Fetcher', function() {
         assert.equal(pageMonitorItems[1].delta, '@@ -1,1 +1,1 @@\n-\n+Page 2 text\n');
         assert.equal(pageMonitorItems[0].contents, '\n\nSome text\nAnother line\n');
         assert.equal(pageMonitorItems[1].contents, 'Page 2 text');
-        done();
-      }).catch(done);
+      });
     });
-    it('should handle updates with changes in monitored sections', function (done) {
+    it('should handle updates with changes in monitored sections', function () {
       var config;
       var pages = [
         {url: 'https://site1.com', file: 'page1.html'},
@@ -173,10 +169,9 @@ describe('Fetcher', function() {
         assert.equal(pageMonitorItems[1].delta, '@@ -1,1 +1,1 @@\n-\n+Page 2 text\n');
         assert.equal(pageMonitorItems[0].contents, '\n\nAnother line\nNew content\n');
         assert.equal(pageMonitorItems[1].contents, 'Page 2 text');
-        done();
-      }).catch(done);
+      });
     });
-    it('should handle connection failures when polling a page', function (done) {
+    it('should handle connection failures when polling a page', function () {
       var config;
       var pages = [
         {url: 'https://site1.com', file: 'page1.html'},
@@ -239,13 +234,12 @@ describe('Fetcher', function() {
         assert.equal(pageMonitorItems[1].delta, '@@ -1,1 +1,1 @@\n-\n+Page 2 text\n');
         assert.equal(pageMonitorItems[0].contents, '\n\nSome text\nAnother line\n');
         assert.equal(pageMonitorItems[1].contents, 'Page 2 text');
-        done();
-      }).catch(done);
+      });
     });
   });
 
   describe('feed', function() {
-    it('should poll newly added RSS feeds', function (done) {
+    it('should poll newly added RSS feeds', function () {
       var config;
       var feedFiles = [
         {url: 'http://sites-site1.com', file: 'rss1.xml'},
@@ -309,10 +303,9 @@ describe('Fetcher', function() {
         assert.deepEqual(feeds[1].FeedItems, [
           { guid: 'http://updates-site2.com@@Item@1', title: 'Title 1', date: new Date('2016-06-10T10:34:00.000Z'), contents: 'Text 1', url: 'http://site2/link1', FeedUrl: 'http://updates-site2.com' }
         ]);
-        done();
-      }).catch(done);
+      });
     });
-    it('should poll newly added Atom feeds', function (done) {
+    it('should poll newly added Atom feeds', function () {
       var config;
       var userSaveStartDate, startDate, endDate;
       return loadFile('atom.xml').then(function(loadedFile) {
@@ -363,10 +356,9 @@ describe('Fetcher', function() {
           { guid: 'http://sites-site1.com@@http://site1/link2-good', title: 'Title 2', date: new Date('2003-12-14T18:30:02.000Z'), contents: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<0 type="xhtml">\n  <div xmlns="http://www.w3.org/1999/xhtml">\n    <p>Content 1</p>\n  </div>\n</0>', url: 'http://site1/link2-good', FeedUrl: 'http://sites-site1.com' },
           { guid: 'http://sites-site1.com@@Item@3', title: 'Title 3', contents: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<0 type="xhtml">\n  <div xmlns="http://www.w3.org/1999/xhtml">\n    <p>Content 1</p>\n  </div>\n</0>', url: 'http://site1/link3-good', FeedUrl: 'http://sites-site1.com' }
         ]);
-        done();
-      }).catch(done);
+      });
     });
-    it('should poll newly added RDF feeds', function (done) {
+    it('should poll newly added RDF feeds', function () {
       var config;
       var userSaveStartDate, startDate, endDate;
       return loadFile('rdf.xml').then(function(loadedFile) {
@@ -409,10 +401,9 @@ describe('Fetcher', function() {
         assert.deepEqual(feeds[0].FeedItems, [
           { guid: 'http://sites-site1.com@@http://site1/link1', title: 'Title 1', date: new Date('2013-09-26T21:36:20.000Z'), contents: 'Description 1', url: 'http://site1/link1', FeedUrl: 'http://sites-site1.com' }
         ]);
-        done();
-      }).catch(done);
+      });
     });
-    it('should handle updates to RSS feeds', function (done) {
+    it('should handle updates to RSS feeds', function () {
       this.timeout(4000);
       var config;
       var feedFiles = [
@@ -492,10 +483,9 @@ describe('Fetcher', function() {
         assert.deepEqual(feeds[1].FeedItems, [
           { guid: 'http://updates-site2.com@@Item@1', title: 'Title 1', date: new Date('2016-06-10T10:34:00.000Z'), contents: 'Text 1', url: 'http://site2/link1', FeedUrl: 'http://updates-site2.com' }
         ]);
-        done();
-      }).catch(done);
+      });
     });
-    it('should handle connection failures when polling an RSS feed', function (done) {
+    it('should handle connection failures when polling an RSS feed', function () {
       this.timeout(4000);
       var config;
       var feedFiles = [
@@ -610,8 +600,7 @@ describe('Fetcher', function() {
         assert.deepEqual(feeds[1].FeedItems, [
           { guid: 'http://updates-site2.com@@Item@1', title: 'Title 1', date: new Date('2016-06-10T10:34:00.000Z'), contents: 'Text 1', url: 'http://site2/link1', FeedUrl: 'http://updates-site2.com' }
         ]);
-        done();
-      }).catch(done);
+      });
     });
   });
 });
