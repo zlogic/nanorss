@@ -54,6 +54,7 @@ describe('Persistence', function() {
         url: 'http://item',
         contents: 'contents',
         delta: 'delta',
+        error: null,
         flags: null,
         match: null,
         replace: null,
@@ -110,6 +111,7 @@ describe('Persistence', function() {
             savePageMonitorItem.flags = null;
             savePageMonitorItem.match = null;
             savePageMonitorItem.replace = null;
+            savePageMonitorItem.error = null;
             savePageMonitorItem.UserId = user.id;
             savePageMonitorItem.id = pageMonitorItem.id;
           })
@@ -156,6 +158,7 @@ describe('Persistence', function() {
             savePageMonitorItem.flags = null;
             savePageMonitorItem.match = null;
             savePageMonitorItem.replace = null;
+            savePageMonitorItem.error = null;
             savePageMonitorItem.UserId = user.id;
             savePageMonitorItem.id = pageMonitorItem.id;
           })
@@ -223,6 +226,7 @@ describe('Persistence', function() {
             savePageMonitorItem.flags = null;
             savePageMonitorItem.match = null;
             savePageMonitorItem.replace = null;
+            savePageMonitorItem.error = null;
             savePageMonitorItem.UserId = user.id;
             savePageMonitorItem.id = pageMonitorItem.id;
           })
@@ -262,6 +266,7 @@ describe('Persistence', function() {
             savePageMonitorItem.flags = null;
             savePageMonitorItem.match = null;
             savePageMonitorItem.replace = null;
+            savePageMonitorItem.error = null;
             savePageMonitorItem.UserId = user.id;
             savePageMonitorItem.id = pageMonitorItem.id;
           })

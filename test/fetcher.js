@@ -212,8 +212,9 @@ describe('Fetcher', function() {
         assert.equal(pageMonitorItems[0].updatedAt >= failPollStartDate, true);
         assert.equal(pageMonitorItems[0].updatedAt <= failPollEndDate, true);
         assert.equal(pageMonitorItems[0].url, pages[0].url);
-        assert.equal(pageMonitorItems[0].delta, errorMessage);
-        assert.equal(pageMonitorItems[0].contents, errorMessage);
+        assert.equal(pageMonitorItems[0].error, errorMessage);
+        assert.equal(pageMonitorItems[0].delta, '@@ -1,1 +1,5 @@\n \n+\n+Some text\n+Another line\n+\n');
+        assert.equal(pageMonitorItems[0].contents, '\n\nSome text\nAnother line\n');
         finalPollStartDate = new Date();
         return pagemonitor.update();
       }).then(function() {
@@ -230,10 +231,12 @@ describe('Fetcher', function() {
         });
         assert.equal(pageMonitorItems[0].url, pages[0].url);
         assert.equal(pageMonitorItems[1].url, pages[1].url);
-        assert.equal(pageMonitorItems[0].delta, '@@ -1,1 +1,5 @@\n-' + errorMessage + '\n+\n+\n+Some text\n+Another line\n+\n');
+        assert.equal(pageMonitorItems[0].delta, '@@ -1,1 +1,5 @@\n \n+\n+Some text\n+Another line\n+\n');
         assert.equal(pageMonitorItems[1].delta, '@@ -1,1 +1,1 @@\n-\n+Page 2 text\n');
         assert.equal(pageMonitorItems[0].contents, '\n\nSome text\nAnother line\n');
         assert.equal(pageMonitorItems[1].contents, 'Page 2 text');
+        assert.equal(pageMonitorItems[0].error, null);
+        assert.equal(pageMonitorItems[1].error, null);
       });
     });
   });

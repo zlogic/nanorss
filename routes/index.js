@@ -35,10 +35,11 @@ router.get('/pagemonitor/:id', function(req, res, next) {
     if(page === null)
       return next(new Error(i18n.__('Item %s not found', id)));
 
+    var contents = (page.error !== undefined && page.error !== null) ? page.error : page.delta;
     res.render('item', {
       item: {
         date: page.updatedAt,
-        contents: page.delta.replace(/\n/g, '<br>\n'),
+        contents: contents.replace(/\n/g, '<br>\n'),
         url: page.url
       }
     });
