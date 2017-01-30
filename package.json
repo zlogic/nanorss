@@ -9,13 +9,13 @@
     "worker": "node ./bin/worker.js"
   },
   "dependencies": {
-    "body-parser": "~1.15.2",
+    "body-parser": "~1.16.0",
     "bootstrap": "~3.3.7",
     "compression": "~1.6.2",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.0",
     "diff": "~3.2.0",
-    "express": "~4.14.0",
+    "express": "~4.14.1",
     "html-to-text": "~3.0.0",
     "i18n": "~0.8.3",
     "jade": "~1.11.0",
@@ -28,17 +28,17 @@
     "passport-local": "~1.0.0",
     "pg": "~6.1.2",
     "pg-hstore": "~2.3.2",
-    "sequelize": "~3.29.0",
+    "sequelize": "~3.30.0",
     "serve-favicon": "~2.3.2",
     "split": "~1.0.0",
     "sqlite3": "~3.1.8",
-    "winston": "~2.3.0",
+    "winston": "~2.3.1",
     "xml2js": "~0.4.17"
   },
   "devDependencies": {
     "mocha": "~3.2.0",
     "nock": "~9.0.2",
-    "superagent": "~3.3.1"
+    "superagent": "~3.4.1"
   },
   "engines": {
     "node": "~6.9.4",
