@@ -3,7 +3,7 @@ var path = require('path');
 var assert = require('assert');
 var nock = require('nock');
 
-require('./utils/dbconfiguration');
+var dbConfiguration = require('./utils/dbconfiguration');
 var persistence = require('../lib/services/persistence');
 var logger = require('../lib/services/logger').logger;
 var pagemonitor = require('../lib/pagemonitor/fetcher');
@@ -24,6 +24,7 @@ var loadFile = function(filename) {
 describe('Fetcher', function() {
   beforeEach(function() {
     logger.info(this.currentTest.fullTitle());
+    dbConfiguration.reconfigureDb();
     return persistence.init({force: true});
   });
   describe('pagemonitor', function() {

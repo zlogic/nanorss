@@ -2,7 +2,7 @@ var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
 
-require('./utils/dbconfiguration');
+var dbConfiguration = require('./utils/dbconfiguration');
 var persistence = require('../lib/services/persistence');
 var logger = require('../lib/services/logger').logger;
 require('./utils/logging');
@@ -19,6 +19,7 @@ var loadFile = function(filename) {
 describe('Persistence', function() {
   beforeEach(function() {
     logger.info(this.currentTest.fullTitle());
+    dbConfiguration.reconfigureDb();
     return persistence.init({force: true});
   });
 

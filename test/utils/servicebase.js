@@ -1,4 +1,4 @@
-require('./dbconfiguration');
+var dbConfiguration = require('./dbconfiguration');
 var persistence = require('../../lib/services/persistence');
 var logger = require('../../lib/services/logger').logger;
 var superagent = require('superagent');
@@ -16,7 +16,7 @@ var authenticateUser = function(userData, callback){
     .send("username=" + userData.username)
     .send("password=" + userData.password)
     .send("grant_type=password")
-    .send("client_id=vogonweb")
+    .send("client_id=nanorssweb")
     .end(function(err, result){
       if(err) return callback(err);
       callback(null, result.body.access_token, result);
@@ -41,6 +41,7 @@ var hooks = function(){
 
   beforeEach(function() {
     logger.info(this.currentTest.fullTitle());
+    dbConfiguration.reconfigureDb();
     return persistence.init({force: true});
   });
 }
