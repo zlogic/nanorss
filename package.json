@@ -38,8 +38,8 @@
   },
   "devDependencies": {
     "mocha": "~3.2.0",
-    "nock": "~9.0.5",
-    "superagent": "~3.4.2"
+    "nock": "~9.0.6",
+    "superagent": "~3.4.3"
   },
   "engines": {
     "node": "~6.9.5",
