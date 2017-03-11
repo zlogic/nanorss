@@ -4,7 +4,7 @@ block content
   h1= title
   div(id="login", class="hidden")
     h2 #{__('Login')}
-    form(id="loginForm", class="form-horizontal")
+    form(id="loginForm", class="form-horizontal", autocomplete="off")
       div(class="form-group")
         label(for="inputUsername", class="col-sm-2 control-label")
           | #{__('Username')}
