@@ -13,36 +13,36 @@
     "bootstrap": "~3.3.7",
     "compression": "~1.6.2",
     "cookie-parser": "~1.4.3",
-    "debug": "~2.6.3",
+    "debug": "~2.6.6",
     "diff": "~3.2.0",
     "express": "~4.15.2",
     "html-to-text": "~3.2.0",
     "i18n": "~0.8.3",
     "jade": "~1.11.0",
-    "jquery": "~3.2.0",
+    "jquery": "~3.2.1",
     "morgan": "~1.8.1",
-    "needle": "~1.5.2",
-    "node-uuid": "~1.4.7",
+    "needle": "~1.6.0",
+    "uuid": "~3.0.1",
     "oauth2orize": "~1.8.0",
     "passport": "~0.3.2",
     "passport-http-bearer": "~1.0.1",
     "passport-local": "~1.0.0",
-    "pg": "~6.1.4",
+    "pg": "~6.1.5",
     "pg-hstore": "~2.3.2",
-    "sequelize": "~3.30.2",
-    "serve-favicon": "~2.4.1",
+    "sequelize": "~3.30.4",
+    "serve-favicon": "~2.4.2",
     "split": "~1.0.0",
     "sqlite3": "~3.1.8",
     "winston": "~2.3.1",
     "xml2js": "~0.4.17"
   },
   "devDependencies": {
-    "mocha": "~3.2.0",
-    "nock": "~9.0.9",
-    "superagent": "~3.5.0"
+    "mocha": "~3.4.1",
+    "nock": "~9.0.13",
+    "superagent": "~3.5.2"
   },
   "engines": {
-    "node": "~6.10.0",
+    "node": "~6.10.3",
     "npm": "~3.10.10"
   }
 }
