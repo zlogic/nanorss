@@ -45,7 +45,7 @@ describe('Persistence', function() {
           assert.equal(user.username, 'default');
           assert.equal(user.opml, '<opml/>');
           assert.equal(user.pagemonitor, '<pagemonitor/>');
-          user.verifyPassword('pass').then(function(passwordValid){
+          return user.verifyPassword('pass').then(function(passwordValid){
             assert.equal(passwordValid, true);
           });
         });
