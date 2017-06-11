@@ -44,6 +44,10 @@ var hooks = function(){
     dbConfiguration.reconfigureDb();
     return persistence.init({force: true});
   });
+
+  afterEach(function() {
+    return persistence.close();
+  });
 }
 
 module.exports.baseUrl = baseUrl;

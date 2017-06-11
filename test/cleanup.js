@@ -27,9 +27,9 @@ describe('Cleanup', function() {
     return persistence.init({force: true});
   });
 
-  afterEach(function(done) {
+  afterEach(function() {
     delete process.env.ITEM_EXPIRE_DAYS;
-    done();
+    return persistence.close();
   });
 
   describe('pagemonitor', function () {

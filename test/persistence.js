@@ -23,6 +23,10 @@ describe('Persistence', function() {
     return persistence.init({force: true});
   });
 
+  afterEach(function() {
+    return persistence.close();
+  });
+
   describe('user', function () {
     it('should create a new user with an empty database', function () {
       return persistence.getUserData().then(function(user){

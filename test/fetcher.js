@@ -27,6 +27,11 @@ describe('Fetcher', function() {
     dbConfiguration.reconfigureDb();
     return persistence.init({force: true});
   });
+
+  afterEach(function() {
+    return persistence.close();
+  });
+
   describe('pagemonitor', function() {
     it('should poll newly added pages', function () {
       //this.timeout(60000);

@@ -162,7 +162,7 @@ describe('Service', function() {
             try {
               assert.ok(err);
               assert.equal(result.status, 500);
-              assert.deepEqual(result.text, 'Validation error: Validation notEmpty failed');
+              assert.deepEqual(result.text, 'Validation error: Validation notEmpty on username failed');
               validateDefaultUserdata(done);
             } catch(err) {done(err);}
           });
@@ -179,7 +179,7 @@ describe('Service', function() {
             try {
               assert.ok(err);
               assert.equal(result.status, 500);
-              assert.deepEqual(result.text, 'Validation error: Validation notEmpty failed');
+              assert.deepEqual(result.text, 'Validation error: Validation notEmpty on password failed');
               validateDefaultUserdata(done);
             } catch(err) {done(err);}
           });
