@@ -15,20 +15,20 @@
     "cookie-parser": "~1.4.3",
     "debug": "~3.1.0",
     "diff": "~3.4.0",
-    "express": "~4.16.1",
+    "express": "~4.16.2",
     "html-to-text": "~3.3.0",
     "i18n": "~0.8.3",
     "jade": "~1.11.0",
     "jquery": "~3.2.1",
     "morgan": "~1.9.0",
     "needle": "~2.0.1",
-    "oauth2orize": "~1.10.0",
+    "oauth2orize": "~1.11.0",
     "passport": "~0.4.0",
     "passport-http-bearer": "~1.0.1",
     "passport-local": "~1.0.0",
-    "pg": "~7.3.0",
+    "pg": "~7.4.0",
     "pg-hstore": "~2.3.2",
-    "sequelize": "~4.13.8",
+    "sequelize": "~4.22.5",
     "serve-favicon": "~2.4.5",
     "split": "~1.0.1",
     "sqlite3": "~3.1.13",
@@ -38,11 +38,11 @@
   },
   "devDependencies": {
     "mocha": "~4.0.1",
-    "nock": "~9.0.22",
-    "superagent": "~3.6.3"
+    "nock": "~9.0.27",
+    "superagent": "~3.8.0"
   },
   "engines": {
-    "node": "~6.11.4",
-    "npm": "~3.10.10"
+    "node": "~8.9.0",
+    "npm": "~5.5.1"
   }
 }
