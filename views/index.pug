@@ -1,32 +1,29 @@
 extends layout
-
 block content
-  h1= title
-  div(id="login", class="hidden")
-    h2 #{__('Login')}
-    form(id="loginForm", class="form-horizontal", autocomplete="off")
-      div(class="form-group")
-        label(for="inputUsername", class="col-sm-2 control-label")
-          | #{__('Username')}
-        div(class="col-sm-10")
-          input(type="text", class="form-control", id="inputUsername", placeholder=__('Username'), required)
-      div(class="form-group")
-        label(for="inputPassword" class="col-sm-2 control-label")
-          | #{__('Password')}
-        div(class="col-sm-10")
-          input(type="password", class="form-control", id="inputPassword", placeholder=__('Password'), required)
-      div(class="form-group")
-        div(class="col-sm-offset-2 col-sm-10")
-          div(class="checkbox")
-            label
-              input(type="checkbox", id="rememberMe")
-              | #{__('Remember me')}
-      div(class="form-group")
-        div(class="col-sm-offset-2 col-sm-10")
-          button(type="submit", class="btn btn-default")
-            | #{__('Sign in')}
-      div(class="form-group")
-        div(class="col-sm-offset-2 col-sm-10")
-          div(id="loginFailed", class="alert alert-danger hidden")
-            | #{__('Login failed')}
-  div(id="content")
+  div(class="container")
+    h1= title
+    div(id="login", class="hidden")
+      h2 #{__('Login')}
+      form(id="loginForm", autocomplete="off")
+        div(class="form-row")
+          div(class="form-group col-md-6")
+            label(for="inputUsername")
+              | #{__('Username')}
+            input(type="text", class="form-control", id="inputUsername", placeholder=__('Username'), required)
+          div(class="form-group col-md-6")
+            label(for="inputPassword")
+              | #{__('Password')}
+            input(type="password", class="form-control", id="inputPassword", placeholder=__('Password'), required)
+        div(class="form-row")
+          div(class="form-group col-md-6")
+            div(class="custom-control custom-checkbox")
+              input(class="custom-control-input", type="checkbox", id="rememberMe")
+              label(class="custom-control-label", for="rememberMe")
+                | #{__('Remember me')}
+        div(class="form-row")
+          div(class="form-group col-md-12")
+            button(type="submit", class="btn btn-default")
+              | #{__('Sign in')}
+        div(id="loginFailed", class="alert alert-danger", role="alert", hidden)
+          | #{__('Login failed')}
+    div(id="content")

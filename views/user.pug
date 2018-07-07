@@ -1,29 +1,30 @@
-a(href="#configuration", data-toggle="collapse", aria-expanded="false")
+a(href="#configuration", data-toggle="collapse", aria-expanded="false", aria-controls="configuration")
   h2= __('Configuration')
 div(id="configuration", class="collapse")
-  form(id="configurationForm", accept-charset="utf-8", class="form-horizontal", autocomplete="off")
-    div(class="form-group")
-      label(for="editUsername", class="col-sm-2 control-label")
+  form(id="configurationForm", accept-charset="utf-8", autocomplete="off")
+    div(class="form-group row")
+      label(for="editUsername", class="col-sm-2 col-form-label")
         | #{__('Username')}
       div(class="col-sm-10")
         input(type="text", class="form-control", id="editUsername", placeholder=__('Username'), required)
-    div(class="form-group")
-      label(for="editPassword", class="col-sm-2 control-label")
+    div(class="form-group row")
+      label(for="editPassword", class="col-sm-2 col-form-label")
         | #{__('Password')}
       div(class="col-sm-10")
         input(type="password", class="form-control", id="editPassword", placeholder=__('Password'))
-    div(class="form-group")
-      label(for="editOPML", class="col-sm-2 control-label")
+    div(class="form-group row")
+      label(for="editOPML", class="col-sm-2 col-form-label")
         | #{__('OPML')}
       div(class="col-sm-10")
         textarea(name="opml", id="editOPML", class="form-control", rows="20", required)= opml
-    div(class="form-group")
-      label(for="editPageMonitor", class="col-sm-2 control-label")
+    div(class="form-group row")
+      label(for="editPageMonitor", class="col-sm-2 col-form-label")
         | #{__('Page Monitor')}
       div(class="col-sm-10")
         textarea(name="pagemonitor", id="editPageMonitor", class="form-control", rows="20", required)= pagemonitor
-    div(class="form-group")
-      div(class="col-sm-offset-2 col-sm-10")
+    div(class="form-group row")
+      div(class="col-sm-2")
+      div(class="col-sm-10")
         button(type="submit", class="btn btn-default")
           | #{__('Save')}
 
@@ -31,6 +32,9 @@ h2 #{__('Items')}
 each page, index in items
   div
     h3
-      a(href="#item-"+index, data-toggle="collapse")
+      a(href="#item-"+index, data-toggle="collapse", aria-expanded="false", aria-controls="item-"+index)
         | #{page.title} / #{page.origin}
     div(id="item-"+index, class="collapse expandable-item", data-fetchurl=page.fetchUrl)
+      div(class="progress")
+        div(class="progress-bar progress-bar-striped progress-bar-animated", role="progressbar", aria-valuenow="100", aria-valuemin="0", aria-valuemax="100", style="width: 100%")
+      span(id="item")

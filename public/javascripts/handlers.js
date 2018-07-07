@@ -5,9 +5,9 @@ var authData = {
     if(this.loginForm === undefined)
       return;
     if(this.token === undefined)
-      this.loginForm.removeClass("hidden");
+      this.loginForm.prop("hidden", false);
     else
-      this.loginForm.addClass("hidden");
+      this.loginForm.prop("hidden", true);
   },
   setToken: function(token, saveToken) {
     this.token = token;
@@ -67,17 +67,22 @@ $(document).ready(function() {
       divContent.append(data);
       // Add handlers for loading items
       // Expand item
-      $('.collapse.expandable-item').on('shown.bs.collapse', function() {
+      $('.expandable-item.collapse').on('shown.bs.collapse', function() {
         var placeholder = jQuery(this);
+        placeholder.children(".progress").hide();
+        var target = placeholder.children("#item");
+        target.hide().empty();
         $.get(placeholder.attr('data-fetchurl'), function(data) {
-          placeholder.empty();
-          if(placeholder.attr('aria-expanded') === "true")
-            placeholder.append(data);
+          target.empty();
+          target.append(data);
+          target.slideDown();
         });
       });
       // Collapse item
       $('.collapse.expandable-item').on('hidden.bs.collapse', function() {
-        jQuery(this).empty();
+        var placeholder = jQuery(this);
+        placeholder.children(".progress").show();
+        placeholder.children("#item").empty().hide();
       });
       // Add handlers for configuration
       var configurationCollapsible = $('#configuration.collapse');
@@ -95,7 +100,6 @@ $(document).ready(function() {
       // Expand configuration
       configurationCollapsible.on('shown.bs.collapse', function() {
         lockConfiguration();
-        var placeholder = jQuery(this);
         var request = authData.get("user/configuration")
         request.done(function(data) {
           username.val(data.username);
@@ -143,7 +147,7 @@ $(document).ready(function() {
     authData.forgetToken();
     // Prepare request
     var $form = $(this);
-    $form.find("#loginFailed").addClass("hidden");
+    $form.find("#loginFailed").prop("hidden", true);
     var username = $form.find("input[id='inputUsername']").val();
     var password = $form.find("input[id='inputPassword']").val();
     var rememberMe = $form.find("input[id='rememberMe']").prop('checked');
@@ -154,7 +158,7 @@ $(document).ready(function() {
       loadContent();
     });
     posting.fail(function() {
-      $form.find("#loginFailed").removeClass("hidden");
+      $form.find("#loginFailed").prop("hidden", false);
     });
   });
 
