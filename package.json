@@ -9,40 +9,40 @@
     "worker": "node ./bin/worker.js"
   },
   "dependencies": {
-    "body-parser": "~1.18.2",
+    "body-parser": "~1.18.3",
     "bootstrap": "~3.3.7",
-    "compression": "~1.7.1",
+    "compression": "~1.7.2",
     "cookie-parser": "~1.4.3",
     "debug": "~3.1.0",
-    "diff": "~3.4.0",
-    "express": "~4.16.2",
-    "html-to-text": "~3.3.0",
+    "diff": "~3.5.0",
+    "express": "~4.16.3",
+    "html-to-text": "~4.0.0",
     "i18n": "~0.8.3",
     "jade": "~1.11.0",
-    "jquery": "~3.2.1",
+    "jquery": "~3.3.1",
     "morgan": "~1.9.0",
-    "needle": "~2.1.0",
+    "needle": "~2.2.1",
     "oauth2orize": "~1.11.0",
     "passport": "~0.4.0",
     "passport-http-bearer": "~1.0.1",
     "passport-local": "~1.0.0",
-    "pg": "~7.4.1",
+    "pg": "~7.4.3",
     "pg-hstore": "~2.3.2",
-    "sequelize": "~4.31.0",
-    "serve-favicon": "~2.4.5",
+    "sequelize": "~4.38.0",
+    "serve-favicon": "~2.5.0",
     "split": "~1.0.1",
-    "sqlite3": "~3.1.13",
-    "uuid": "~3.1.0",
-    "winston": "~2.4.0",
+    "sqlite3": "~4.0.1",
+    "uuid": "~3.3.2",
+    "winston": "~2.4.3",
     "xml2js": "~0.4.19"
   },
   "devDependencies": {
-    "mocha": "~4.1.0",
-    "nock": "~9.1.6",
-    "superagent": "~3.8.2"
+    "mocha": "~5.2.0",
+    "nock": "~9.4.1",
+    "superagent": "~3.8.3"
   },
   "engines": {
-    "node": "~8.9.4",
+    "node": "~8.11.3",
     "npm": "~5.6.0"
   }
 }
