@@ -6,7 +6,8 @@
     "start": "node ./bin/www",
     "test": "mocha test/*.js",
     "runmaintenance": "node ./bin/worker.js",
-    "worker": "node ./bin/worker.js"
+    "worker": "node ./bin/worker.js",
+    "heroku-postbuild": "npm prune --production"
   },
   "dependencies": {
     "body-parser": "~1.18.3",
