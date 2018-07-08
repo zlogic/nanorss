@@ -69,13 +69,13 @@ $(document).ready(function() {
       // Expand item
       $('.expandable-item.collapse').on('shown.bs.collapse', function() {
         var placeholder = jQuery(this);
-        placeholder.children(".progress").hide();
         var target = placeholder.children("#item");
         target.hide().empty();
         $.get(placeholder.attr('data-fetchurl'), function(data) {
           target.empty();
           target.append(data);
           target.slideDown();
+          placeholder.children(".progress").hide();
         });
       });
       // Collapse item
