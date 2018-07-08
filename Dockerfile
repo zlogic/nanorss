@@ -25,5 +25,8 @@ RUN rm -rf \
   .git .gitignore \
   Procfile
 
+# Delete development files
+RUN npm prune --production
+
 EXPOSE 3000
 CMD [ "npm", "start" ]
