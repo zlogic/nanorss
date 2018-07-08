@@ -28,5 +28,8 @@ RUN rm -rf \
 # Delete development files
 RUN npm prune --production
 
+# Delete npm cache
+RUN rm -rf ~/.npm
+
 EXPOSE 3000
 CMD [ "npm", "start" ]
