@@ -1,12 +1,11 @@
 .app-main-toolbar {
   z-index: 2;
-  top: 0;
-  left: 0;
-  right: 0;
+  position: sticky;
+  top: 0px;
 }
 
 .content-container {
-  margin-top: 24px;
+  margin: 8px;
 }
 
 .progressbar-fill {
@@ -14,5 +13,5 @@
 }
 
 .toolbar-spacer {
-  width: 64px;
+  width: 24px;
 }
