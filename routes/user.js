@@ -15,7 +15,6 @@ router.get('/feed', function(req, res, next) {
       var pageTitle = page.title;
       return {
         sortBy: new Date(page.updatedAt).getTime(),
-        date: page.date,
         title: pageTitle,
         origin: pageTitle,
         fetchUrl: 'pagemonitor/' + encodeURIComponent(page.id),
@@ -29,7 +28,6 @@ router.get('/feed', function(req, res, next) {
       return userFeed.Feed.FeedItems.map(function(feedItem) {
         return {
           sortBy: Math.min(new Date(feedItem.createdAt).getTime(), new Date(feedItem.date).getTime()),
-          date: feedItem.date,
           title: feedItem.title,
           origin: userFeed.title,
           fetchUrl: 'feeditem/' + feedItem.id,

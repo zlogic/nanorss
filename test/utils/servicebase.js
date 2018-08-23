@@ -15,7 +15,6 @@ var authenticateUser = function(userData, callback){
     .send("username=" + userData.username)
     .send("password=" + userData.password)
     .send("grant_type=password")
-    .send("client_id=nanorssweb")
     .end(function(err, result){
       if(err) return callback(err);
       callback(null, result.body.access_token, result);
@@ -28,6 +27,7 @@ var tokenHeader = function(token){
 
 var hooks = function(){
   var server;
+  var jsDate;
   before(function(done){
     app.set('port', port);
     server = http.createServer(app);
@@ -39,12 +39,14 @@ var hooks = function(){
   });
 
   beforeEach(function() {
+    jsDate = Date;
     logger.info(this.currentTest.fullTitle());
     dbConfiguration.reconfigureDb();
     return persistence.init({force: true});
   });
 
   afterEach(function() {
+    Date = jsDate;
     return persistence.close();
   });
 }

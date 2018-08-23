@@ -3,20 +3,14 @@ var path = require('path');
 var assert = require('assert');
 
 var dbConfiguration = require('./utils/dbconfiguration');
+var createLoadFile = require('./utils/loadfile');
 var persistence = require('../lib/services/persistence');
 var logger = require('../lib/services/logger').logger;
 var pagemonitor = require('../lib/pagemonitor/fetcher');
 var feed = require('../lib/feed/fetcher');
 require('./utils/logging');
 
-var loadFile = function(filename) {
-  return new Promise(function(resolve, reject){
-    fs.readFile(path.join(__dirname, 'data', 'cleanup', filename), function(error, data){
-      if(error) return reject(error);
-      resolve(data);
-    });
-  });
-};
+var loadFile = createLoadFile('cleanup');
 
 describe('Cleanup', function() {
   var oneSecond = 1 / (24 * 60 * 60);
