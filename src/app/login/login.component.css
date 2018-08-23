@@ -1,0 +1,9 @@
+.container {
+  display: flex;
+  justify-content: center;
+}
+
+mat-card {
+  max-width: 500px;
+  align-self: center;
+}

@@ -15,17 +15,20 @@ RUN  buildDeps='git' \
   && npm install \
   && apk del .build-deps
 
+# Process resources with Webpack
+RUN NODE_ENV=production npm run build:prod
+
 # Run tests
 RUN npm test -- --timeout 10000
 
-# Delete test resources
-RUN rm -rf \
-  test \
-  .git .gitignore \
-  Procfile package-lock.json
-
 # Delete development files
 RUN npm prune --production
+
+# Delete test resources, sources and other unnecessary files
+RUN rm -rf \
+  test src \
+  .git .gitignore \
+  Procfile package-lock.json
 
 # Copy into a fresh image
 FROM node:8-alpine

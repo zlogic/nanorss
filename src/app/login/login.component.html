@@ -1,0 +1,27 @@
+<div class="container">
+<mat-card>
+  <mat-card-title i18n>Login</mat-card-title>
+  <mat-card-content>
+    <form #loginForm="ngForm" (ngSubmit)="login()" autocomplete="off" novalidate>
+      <p>
+        <mat-form-field>
+          <input matInput type="text" i18n-placeholder placeholder="Username" name="username" [(ngModel)]="username" required>
+        </mat-form-field>
+        <span>&nbsp;</span>
+        <mat-form-field>
+          <input matInput type="password" i18n-placeholder placeholder="Password" name="password" [(ngModel)]="password" required>
+        </mat-form-field>
+      </p>
+      <p>
+        <mat-checkbox class="example-margin" name="rememberToken" [(ngModel)]="rememberToken" i18n>Remember me</mat-checkbox>
+      </p>
+      <p *ngIf="errorMessage">
+        <mat-error>{{errorMessage}}</mat-error>
+      </p>
+      <p>
+        <button mat-raised-button color="primary" [disabled]="!loginForm.valid" i18n>Sign in</button>
+      </p>
+    </form>
+  </mat-card-content>
+</mat-card>
+</div>

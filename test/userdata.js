@@ -3,8 +3,6 @@ var assert = require('assert');
 var persistence = require('../lib/services/persistence');
 var superagent = require('superagent');
 
-var i18n = require('i18n');
-
 var baseUrl = serviceBase.baseUrl;
 var authenticateUser = serviceBase.authenticateUser;
 var tokenHeader = serviceBase.tokenHeader;
@@ -34,23 +32,6 @@ describe('Service', function() {
   };
 
   describe('userdata', function () {
-    it('should get the page for an authenticated user', function (done) {
-      var userData = {username: "default", password: "pass"};
-      prepopulate().then(function(){
-        authenticateUser(userData, function(err, token, result){
-          if(err) return done(err);
-          superagent.get(baseUrl + "/user").set(tokenHeader(token)).end(function(err, result){
-            if(err) return done(err);
-            try {
-              assert.ok(result);
-              assert.equal(result.status, 200);
-              assert.ok(result.text.includes(i18n.__("Configuration")));
-              done();
-            } catch(err) {done(err);}
-          });
-        });
-      }).catch(done);
-    });
     it('should get details for an authenticated user', function (done) {
       var userData = {username: "default", password: "pass"};
       prepopulate().then(function(){
@@ -181,23 +162,6 @@ describe('Service', function() {
               assert.equal(result.status, 500);
               assert.deepEqual(result.text, 'Validation error: Validation notEmpty on password failed');
               validateDefaultUserdata(done);
-            } catch(err) {done(err);}
-          });
-        });
-      }).catch(done);
-    });
-    it('should ignore id in requests for getting the page for an authenticated user', function (done) {
-      var userData = {username: "default", password: "pass"};
-      prepopulate().then(function(){
-        authenticateUser(userData, function(err, token, result){
-          if(err) return done(err);
-          superagent.get(baseUrl + "/user").set(tokenHeader(token)).send({id: 2}).end(function(err, result){
-            if(err) return done(err);
-            try {
-              assert.ok(result);
-              assert.equal(result.status, 200);
-              assert.ok(result.text.includes(i18n.__("Configuration")));
-              done();
             } catch(err) {done(err);}
           });
         });

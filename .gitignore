@@ -1,5 +1,10 @@
 # Node dependencies
 node_modules
+
+# compiled output
+/dist
+
+# Temporary test results
 test/tmp
 
 # Visual Studio Code configuration

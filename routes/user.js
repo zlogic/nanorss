@@ -1,5 +1,4 @@
 var express = require('express');
-var i18n = require('i18n');
 var persistence = require('../lib/services/persistence');
 var logger = require('../lib/services/logger');
 var Promise = require('bluebird').Promise;
@@ -10,12 +9,13 @@ var router = express.Router();
 router.use(passport.authenticate('bearer', { session: false }));
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
+router.get('/feed', function(req, res, next) {
   var processPagemonitorData = persistence.getPageMonitorItems().then(function(monitoredPages){
     var monitoredPagesItems = monitoredPages.map(function(page){
       var pageTitle = page.title;
       return {
         sortBy: new Date(page.updatedAt).getTime(),
+        date: page.date,
         title: pageTitle,
         origin: pageTitle,
         fetchUrl: 'pagemonitor/' + encodeURIComponent(page.id),
@@ -29,6 +29,7 @@ router.get('/', function(req, res, next) {
       return userFeed.Feed.FeedItems.map(function(feedItem) {
         return {
           sortBy: Math.min(new Date(feedItem.createdAt).getTime(), new Date(feedItem.date).getTime()),
+          date: feedItem.date,
           title: feedItem.title,
           origin: userFeed.title,
           fetchUrl: 'feeditem/' + feedItem.id,
@@ -46,13 +47,11 @@ router.get('/', function(req, res, next) {
     items.sort(function(a, b){
       return b.sortBy - a.sortBy;
     });
-    res.render('user', {
-      items: items
+    items.forEach(function(item){
+      delete item.sortBy;
     });
-  }).catch(function(err) {
-    logger.logException(err);
-    res.render('user', { items: [] });
-  });
+    res.send(items);
+  }).catch(next);
 });
 
 /* GET user data. */

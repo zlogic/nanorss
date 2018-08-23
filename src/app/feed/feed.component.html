@@ -1,0 +1,16 @@
+<mat-expansion-panel *ngFor="let item of items" (opened)="loadItem(item)">
+  <mat-expansion-panel-header>
+    <mat-panel-title>{{item.title}} / {{item.origin}}</mat-panel-title>
+  </mat-expansion-panel-header>
+  <ng-template matExpansionPanelContent>
+    <mat-card>
+      <mat-card-content>
+        <mat-progress-bar *ngIf="!item.html" mode="indeterminate"></mat-progress-bar>
+        <div [innerHtml]="item.html"></div>
+      </mat-card-content>
+      <mat-card-actions>
+        <a [href]="item.url" i18n><button mat-button color="primary">Go to site</button></a>
+      </mat-card-actions>
+    </mat-card>
+  </ng-template>
+</mat-expansion-panel>

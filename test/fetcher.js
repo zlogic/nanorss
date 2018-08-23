@@ -9,8 +9,6 @@ var logger = require('../lib/services/logger').logger;
 var pagemonitor = require('../lib/pagemonitor/fetcher');
 var feed = require('../lib/feed/fetcher');
 require('./utils/logging');
-require('./utils/i18nconfiguration');
-var i18n = require('i18n');
 
 var loadFile = function(filename) {
   return new Promise(function(resolve, reject){
@@ -184,7 +182,7 @@ describe('Fetcher', function() {
         {url: 'http://site2.com', file: 'page2.txt'}
       ];
       var userSaveStartDate, startDate, failPollStartDate, failPollEndDate, finalPollStartDate, endDate;
-      var errorMessage = i18n.__('Error when fetching page: %s', 'Access denied');
+      var errorMessage = 'Error when fetching page: Access denied';
       return Promise.all(pages.map(function(page) {
         return loadFile(page.file);
       })).then(function(pageFiles) {

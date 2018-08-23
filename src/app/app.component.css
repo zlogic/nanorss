@@ -1,0 +1,18 @@
+.app-main-toolbar {
+  z-index: 2;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.content-container {
+  margin-top: 24px;
+}
+
+.progressbar-fill {
+  flex: 1 1 auto;
+}
+
+.toolbar-spacer {
+  width: 64px;
+}

@@ -1,14 +1,12 @@
 var express = require('express');
-var i18n = require('i18n');
 var persistence = require('../lib/services/persistence');
 var Promise = require('bluebird').Promise;
+var path = require('path');
 var router = express.Router();
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', {
-    title: i18n.__('nanoRSS')
-  });
+router.get(['/', '/login', '/feed', '/configuration'], function(req, res, next) {
+  res.sendFile(path.join(__dirname, '..', 'dist', 'nanorss', 'index.html'));
 });
 
 /* GET feed item. */
@@ -16,15 +14,9 @@ router.get('/feeditem/:id', function(req, res, next) {
   var id = req.params.id;
   persistence.findFeedItem(id).then(function(feedItem){
     if(feedItem === null)
-      return next(new Error(i18n.__('Item %s not found', id)));
+      return next(new Error('Item not found'));
 
-    res.render('item', {
-      item: {
-        date: feedItem.date,
-        contents: feedItem.contents,
-        url: feedItem.url
-      }
-    });
+    res.send(feedItem.contents);
   }).catch(next);
 });
 
@@ -33,16 +25,10 @@ router.get('/pagemonitor/:id', function(req, res, next) {
   var id = req.params.id;
   persistence.findPageMonitorItem(id).then(function(page){
     if(page === null)
-      return next(new Error(i18n.__('Item %s not found', id)));
+      return next(new Error('Item not found'));
 
     var contents = (page.error !== undefined && page.error !== null) ? page.error : page.delta;
-    res.render('item', {
-      item: {
-        date: page.updatedAt,
-        contents: contents.replace(/\n/g, '<br>\n'),
-        url: page.url
-      }
-    });
+    res.send(contents.replace(/\n/g, '<br>\n'));
   }).catch(next);
 });
 
