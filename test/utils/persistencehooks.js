@@ -7,7 +7,7 @@ require('./logging');
 var mockgoose = new Mockgoose(persistence.mongoose);
 
 before(function() {
-  this.timeout(10000);
+  this.timeout(300000);
   return mockgoose.prepareStorage().then(function() {
     return persistence.init();
   });
