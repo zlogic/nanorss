@@ -1,7 +1,6 @@
 var express = require('express');
 var persistence = require('../lib/services/persistence');
 var logger = require('../lib/services/logger');
-var Promise = require('bluebird').Promise;
 var passport = require('passport');
 var router = express.Router();
 
