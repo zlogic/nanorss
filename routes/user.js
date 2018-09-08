@@ -17,7 +17,7 @@ router.get('/feed', function(req, res, next) {
         sortBy: new Date(page.updatedAt).getTime(),
         title: pageTitle,
         origin: pageTitle,
-        fetchUrl: 'pagemonitor/' + encodeURIComponent(page.id),
+        fetchUrl: 'pagemonitor/' + page._id,
         url: page.url
       };
     });
@@ -25,12 +25,12 @@ router.get('/feed', function(req, res, next) {
   });
   var processFeedData = persistence.getUserFeeds().then(function(userFeeds){
     return userFeeds.map(function(userFeed){
-      return userFeed.Feed.FeedItems.map(function(feedItem) {
+      return userFeed.feed.items.map(function(feedItem) {
         return {
-          sortBy: Math.min(new Date(feedItem.createdAt).getTime(), new Date(feedItem.date).getTime()),
+          sortBy: Math.min(new Date(feedItem.lastSeen).getTime(), new Date(feedItem.date).getTime()),
           title: feedItem.title,
           origin: userFeed.title,
-          fetchUrl: 'feeditem/' + feedItem.id,
+          fetchUrl: 'feeditem/' + feedItem._id,
           url: feedItem.url
         };
       });
@@ -54,19 +54,26 @@ router.get('/feed', function(req, res, next) {
 
 /* GET user data. */
 router.get('/configuration', function(req, res, next) {
-  res.send({
-    username: req.user.username,
-    opml: req.user.opml,
-    pagemonitor: req.user.pagemonitor
+  persistence.getUserData().then(function(user){
+    res.send({
+      username: user.username,
+      opml: user.opml,
+      pagemonitor: user.pagemonitor
+    });
   });
 });
 
 /* POST user data. */
 router.post('/configuration', function(req, res, next) {
   persistence.getUserData().then(function(user){
-    var password = req.body.password;
-    for(var v in req.body)
-      user.set(v, req.body[v]);
+    if(req.body.username !== undefined)
+      user.username = req.body.username;
+    if(req.body.password !== undefined)
+      user.password = req.body.password;
+    if(req.body.opml !== undefined)
+      user.opml = req.body.opml;
+    if(req.body.pagemonitor !== undefined)
+      user.pagemonitor = req.body.pagemonitor;
     return user.save();
   }).then(function(user){
     res.send({});

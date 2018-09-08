@@ -2,9 +2,9 @@ var fs = require('fs');
 var path = require('path');
 var assert = require('assert');
 
-var dbConfiguration = require('./utils/dbconfiguration');
 var createLoadFile = require('./utils/loadfile');
 var persistence = require('../lib/services/persistence');
+var persistencebase = require('./utils/persistencebase');
 var logger = require('../lib/services/logger').logger;
 var pagemonitor = require('../lib/pagemonitor/fetcher');
 var feed = require('../lib/feed/fetcher');
@@ -15,15 +15,10 @@ var loadFile = createLoadFile('cleanup');
 describe('Cleanup', function() {
   var oneSecond = 1 / (24 * 60 * 60);
 
-  beforeEach(function() {
-    logger.info(this.currentTest.fullTitle());
-    dbConfiguration.reconfigureDb();
-    return persistence.init({force: true});
-  });
+  persistencebase.hooks();
 
   afterEach(function() {
     delete process.env.ITEM_EXPIRE_DAYS;
-    return persistence.close();
   });
 
   describe('pagemonitor', function () {
@@ -32,7 +27,6 @@ describe('Cleanup', function() {
         url: 'https://site1.com',
         contents: 'contents1',
         delta: 'delta1',
-        error: null,
         flags: "mi",
         match: "[\\S\\s]*Begin([\\S\\s]*)End[\\S\\s]*",
         replace: "$1",
@@ -46,10 +40,10 @@ describe('Cleanup', function() {
           return user.save();
         });
       }).then(function(user) {
-        return user.getPageMonitorItems().then(function(pageMonitorItems){
+        return persistence.getPageMonitorItems().then(function(pageMonitorItems){
           return pageMonitorItems.find(function(pageMonitorItem){
             return pageMonitorItem.url === expectedPageMonitorItems[0].url;
-          }).update({delta: expectedPageMonitorItems[0].delta, contents: expectedPageMonitorItems[0].contents});
+          }).set({delta: expectedPageMonitorItems[0].delta, contents: expectedPageMonitorItems[0].contents}).save();
         });
       }).then(function() {
         return loadFile('pagemonitor_updated.xml').then(function(config) {
@@ -62,13 +56,13 @@ describe('Cleanup', function() {
         return persistence.getPageMonitorItems();
       }).then(function(pageMonitorItems) {
         pageMonitorItems = pageMonitorItems.map(function(pageMonitorItem) {
-          pageMonitorItem = pageMonitorItem.toJSON();
-          delete pageMonitorItem.createdAt;
+          pageMonitorItem = pageMonitorItem.toObject();
           delete pageMonitorItem.updatedAt;
-          delete pageMonitorItem.id;
-          delete pageMonitorItem.UserId;
+          delete pageMonitorItem._id;
+          delete pageMonitorItem.__v;
           return pageMonitorItem;
         });
+        pageMonitorItems.sort(function(a, b){ return b.url.localeCompare(a.url); });
         assert.deepEqual(pageMonitorItems, expectedPageMonitorItems);
       });
     });
@@ -78,7 +72,6 @@ describe('Cleanup', function() {
         url: 'https://site1.com',
         contents: 'contents1',
         delta: 'delta1',
-        error: null,
         flags: "mi",
         match: "[\\S\\s]*Begin([\\S\\s]*)End[\\S\\s]*",
         replace: "$1",
@@ -87,10 +80,6 @@ describe('Cleanup', function() {
         url: 'http://site2.com',
         contents: 'contents2',
         delta: 'delta2',
-        error: null,
-        flags: null,
-        match: null,
-        replace: null,
         title: "Site 2"
       }];
       var user;
@@ -101,12 +90,12 @@ describe('Cleanup', function() {
           return user.save();
         });
       }).then(function(user) {
-        return user.getPageMonitorItems().then(function(pageMonitorItems){
+        return persistence.getPageMonitorItems().then(function(pageMonitorItems){
           return Promise.all(expectedPageMonitorItems.map(function(expectedItem){
             var update = {delta: expectedItem.delta, contents: expectedItem.contents};
             return pageMonitorItems.find(function(pageMonitorItem) {
               return pageMonitorItem.url === expectedItem.url;
-            }).update(update);
+            }).set(update).save();
           }));
         });
       }).then(function() {
@@ -115,13 +104,13 @@ describe('Cleanup', function() {
         return persistence.getPageMonitorItems();
       }).then(function(pageMonitorItems) {
         pageMonitorItems = pageMonitorItems.map(function(pageMonitorItem) {
-          pageMonitorItem = pageMonitorItem.toJSON();
-          delete pageMonitorItem.createdAt;
+          pageMonitorItem = pageMonitorItem.toObject();
           delete pageMonitorItem.updatedAt;
-          delete pageMonitorItem.id;
-          delete pageMonitorItem.UserId;
+          delete pageMonitorItem._id;
+          delete pageMonitorItem.__v;
           return pageMonitorItem;
         });
+        pageMonitorItems.sort(function(a, b){ return b.url.localeCompare(a.url); });
         assert.deepEqual(pageMonitorItems, expectedPageMonitorItems);
       });
     });
@@ -154,24 +143,20 @@ describe('Cleanup', function() {
       }).then(function() {
         return feed.cleanup();
       }).then(function() {
-        return persistence.getFeeds();
+        return persistence.getFeeds().lean();
       }).then(function(feeds) {
         feeds = feeds.map(function(feed){
-          feed = feed.toJSON();
-          feed.FeedItems = feed.FeedItems.map(function(feedItem) {
-            delete feedItem.createdAt;
-            delete feedItem.updatedAt;
-            delete feedItem.id;
-            delete feedItem.Feed;
-            delete feedItem.FeedUrl;
+          feed.items = feed.items.map(function(feedItem) {
+            delete feedItem._id;
+            delete feedItem.__v;
             return feedItem;
           });
-          delete feed.id;
-          delete feed.createdAt;
-          delete feed.updatedAt;
+          delete feed._id;
+          delete feed.__v;
           return feed;
         });
-        assert.deepEqual(feeds, [{url: 'http://sites-site1.com', FeedItems: saveFeedItems}, {url: 'http://updates-site2.com', FeedItems: []}]);
+        feeds.sort(function(a, b){ return a.url.localeCompare(b.url); });
+        assert.deepEqual(feeds, [{url: 'http://sites-site1.com', items: saveFeedItems}, {url: 'http://updates-site2.com', items: []}]);
       });
     });
     it('should delete expired feeds', function () {
@@ -204,24 +189,20 @@ describe('Cleanup', function() {
       }).then(function() {
         return feed.cleanup();
       }).then(function() {
-        return persistence.getFeeds();
+        return persistence.getFeeds().lean();
       }).then(function(feeds) {
         feeds = feeds.map(function(feed){
-          feed = feed.toJSON();
-          feed.FeedItems = feed.FeedItems.map(function(feedItem) {
-            delete feedItem.createdAt;
-            delete feedItem.updatedAt;
-            delete feedItem.id;
-            delete feedItem.Feed;
-            delete feedItem.FeedUrl;
+          feed.items = feed.items.map(function(feedItem) {
+            delete feedItem._id;
+            delete feedItem.__v;
             return feedItem;
           });
-          delete feed.id;
-          delete feed.createdAt;
-          delete feed.updatedAt;
+          delete feed._id;
+          delete feed.__v;
           return feed;
         });
-        assert.deepEqual(feeds, [{url: 'http://sites-site1.com', FeedItems: saveFeedItems1}, {url: 'http://updates-site2.com', FeedItems: []}]);
+        feeds.sort(function(a, b){ return a.url.localeCompare(b.url); });
+        assert.deepEqual(feeds, [{url: 'http://sites-site1.com', items: saveFeedItems1}, {url: 'http://updates-site2.com', items: []}]);
       });
     });
     it('should delete feeds absent from configuration file', function () {
@@ -248,24 +229,20 @@ describe('Cleanup', function() {
       }).then(function() {
         return feed.cleanup();
       }).then(function() {
-        return persistence.getFeeds();
+        return persistence.getFeeds().lean();
       }).then(function(feeds) {
         feeds = feeds.map(function(feed){
-          feed = feed.toJSON();
-          feed.FeedItems = feed.FeedItems.map(function(feedItem) {
-            delete feedItem.createdAt;
-            delete feedItem.updatedAt;
-            delete feedItem.id;
-            delete feedItem.Feed;
-            delete feedItem.FeedUrl;
+          feed.items = feed.items.map(function(feedItem) {
+            delete feedItem._id;
+            delete feedItem.__v;
             return feedItem;
           });
-          delete feed.id;
-          delete feed.createdAt;
-          delete feed.updatedAt;
+          delete feed._id;
+          delete feed.__v;
           return feed;
         });
-        assert.deepEqual(feeds, [{url: 'http://sites-site1.com', FeedItems: saveFeedItems1}, {url: 'http://updates-site2.com', FeedItems: []}]);
+        feeds.sort(function(a, b){ return a.url.localeCompare(b.url); });
+        assert.deepEqual(feeds, [{url: 'http://sites-site1.com', items: saveFeedItems1}, {url: 'http://updates-site2.com', items: []}]);
       });
     });
     it('should do nothing with feed items or feeds if none have expired', function () {
@@ -292,24 +269,20 @@ describe('Cleanup', function() {
       }).then(function() {
         return feed.cleanup();
       }).then(function() {
-        return persistence.getFeeds();
+        return persistence.getFeeds().lean();
       }).then(function(feeds) {
         feeds = feeds.map(function(feed){
-          feed = feed.toJSON();
-          feed.FeedItems = feed.FeedItems.map(function(feedItem) {
-            delete feedItem.createdAt;
-            delete feedItem.updatedAt;
-            delete feedItem.id;
-            delete feedItem.Feed;
-            delete feedItem.FeedUrl;
+          feed.items = feed.items.map(function(feedItem) {
+            delete feedItem._id;
+            delete feedItem.__v;
             return feedItem;
           });
-          delete feed.id;
-          delete feed.createdAt;
-          delete feed.updatedAt;
+          delete feed._id;
+          delete feed.__v;
           return feed;
         });
-        assert.deepEqual(feeds, [{url: 'http://sites-site1.com', FeedItems: saveFeedItems}, {url: 'http://updates-site2.com', FeedItems: []}]);
+        feeds.sort(function(a, b){ return a.url.localeCompare(b.url); });
+        assert.deepEqual(feeds, [{url: 'http://sites-site1.com', items: saveFeedItems}, {url: 'http://updates-site2.com', items: []}]);
       });
     });
   });

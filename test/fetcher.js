@@ -3,9 +3,9 @@ var path = require('path');
 var assert = require('assert');
 var nock = require('nock');
 
-var dbConfiguration = require('./utils/dbconfiguration');
 var createLoadFile = require('./utils/loadfile');
 var persistence = require('../lib/services/persistence');
+var persistencebase = require('./utils/persistencebase');
 var logger = require('../lib/services/logger').logger;
 var pagemonitor = require('../lib/pagemonitor/fetcher');
 var feed = require('../lib/feed/fetcher');
@@ -14,15 +14,7 @@ require('./utils/logging');
 var loadFile = createLoadFile('fetcher');
 
 describe('Fetcher', function() {
-  beforeEach(function() {
-    logger.info(this.currentTest.fullTitle());
-    dbConfiguration.reconfigureDb();
-    return persistence.init({force: true});
-  });
-
-  afterEach(function() {
-    return persistence.close();
-  });
+  persistencebase.hooks();
 
   describe('pagemonitor', function() {
     it('should poll newly added pages', function () {
@@ -32,7 +24,7 @@ describe('Fetcher', function() {
         {url: 'https://site1.com', file: 'page1.html'},
         {url: 'http://site2.com', file: 'page2.txt'}
       ];
-      var userSaveStartDate, startDate, endDate;
+      var startDate, endDate;
       return Promise.all(pages.map(function(page) {
         return loadFile(page.file);
       })).then(function(pageFiles) {
@@ -45,24 +37,21 @@ describe('Fetcher', function() {
         return persistence.getUserData();
       }).then(function(user){
         user.pagemonitor = config;
-        userSaveStartDate = new Date();
         return user.save();
       }).then(function() {
         startDate = new Date();
         return pagemonitor.update();
       }).then(function() {
         endDate = new Date();
-        return persistence.getPageMonitorItems();
+        return persistence.getPageMonitorItems().lean();
       }).then(function(pageMonitorItems) {
         assert.equal(pageMonitorItems.length, 2);
         pageMonitorItems = pageMonitorItems.map(function(pageMonitorItem) {
-          assert.equal(pageMonitorItem.createdAt >= userSaveStartDate, true);
           assert.equal(pageMonitorItem.updatedAt >= startDate, true);
-          assert.equal(pageMonitorItem.createdAt <= startDate, true);
           assert.equal(pageMonitorItem.updatedAt <= endDate, true);
-          return pageMonitorItem.toJSON();
+          return pageMonitorItem;
         });
-        //pageMonitorItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
+        pageMonitorItems.sort(function(a, b){ return b.url.localeCompare(a.url); });
         assert.equal(pageMonitorItems[0].url, pages[0].url);
         assert.equal(pageMonitorItems[1].url, pages[1].url);
         assert.equal(pageMonitorItems[0].delta, '@@ -1,1 +1,5 @@\n \n+\n+Some text\n+Another line\n+\n');
@@ -79,7 +68,7 @@ describe('Fetcher', function() {
         {url: 'https://site1.com', file: 'page1_update_unmonitored.html'},
         {url: 'http://site2.com', file: 'page2.txt'}
       ];
-      var userSaveStartDate, startDate, secondPollDate, endDate;
+      var startDate, secondPollDate;
       return Promise.all(pages.map(function(page) {
         return loadFile(page.file);
       })).then(function(pageFiles) {
@@ -92,7 +81,6 @@ describe('Fetcher', function() {
         return persistence.getUserData();
       }).then(function(user){
         user.pagemonitor = config;
-        userSaveStartDate = new Date();
         return user.save();
       }).then(function() {
         startDate = new Date();
@@ -101,16 +89,13 @@ describe('Fetcher', function() {
         secondPollDate = new Date();
         return pagemonitor.update();
       }).then(function() {
-        endDate = new Date();
-        return persistence.getPageMonitorItems();
+        return persistence.getPageMonitorItems().lean();
       }).then(function(pageMonitorItems) {
         assert.equal(pageMonitorItems.length, 2);
         pageMonitorItems = pageMonitorItems.map(function(pageMonitorItem) {
-          assert.equal(pageMonitorItem.createdAt >= userSaveStartDate, true);
           assert.equal(pageMonitorItem.updatedAt >= startDate, true);
-          assert.equal(pageMonitorItem.createdAt <= startDate, true);
           assert.equal(pageMonitorItem.updatedAt <= secondPollDate, true);
-          return pageMonitorItem.toJSON();
+          return pageMonitorItem;
         });
         assert.equal(pageMonitorItems[0].url, pages[0].url);
         assert.equal(pageMonitorItems[1].url, pages[1].url);
@@ -151,15 +136,13 @@ describe('Fetcher', function() {
         return pagemonitor.update();
       }).then(function() {
         endDate = new Date();
-        return persistence.getPageMonitorItems();
+        return persistence.getPageMonitorItems().lean();
       }).then(function(pageMonitorItems) {
         assert.equal(pageMonitorItems.length, 2);
         pageMonitorItems = pageMonitorItems.map(function(pageMonitorItem) {
-          assert.equal(pageMonitorItem.createdAt >= userSaveStartDate, true);
           assert.equal(pageMonitorItem.updatedAt >= (pageMonitorItem.url === pages[0].url ? secondPollDate : startDate), true);
-          assert.equal(pageMonitorItem.createdAt <= startDate, true);
           assert.equal(pageMonitorItem.updatedAt <= (pageMonitorItem.url === pages[0].url ? endDate : secondPollDate), true);
-          return pageMonitorItem.toJSON();
+          return pageMonitorItem;
         });
         assert.equal(pageMonitorItems[0].url, pages[0].url);
         assert.equal(pageMonitorItems[1].url, pages[1].url);
@@ -175,7 +158,7 @@ describe('Fetcher', function() {
         {url: 'https://site1.com', file: 'page1.html'},
         {url: 'http://site2.com', file: 'page2.txt'}
       ];
-      var userSaveStartDate, startDate, failPollStartDate, failPollEndDate, finalPollStartDate, endDate;
+      var startDate, failPollStartDate, failPollEndDate, finalPollStartDate, endDate;
       var errorMessage = 'Error when fetching page: Access denied';
       return Promise.all(pages.map(function(page) {
         return loadFile(page.file);
@@ -194,7 +177,6 @@ describe('Fetcher', function() {
         return persistence.getUserData();
       }).then(function(user){
         user.pagemonitor = config;
-        userSaveStartDate = new Date();
         return user.save();
       }).then(function() {
         startDate = new Date();
@@ -217,15 +199,13 @@ describe('Fetcher', function() {
         return pagemonitor.update();
       }).then(function() {
         endDate = new Date();
-        return persistence.getPageMonitorItems();
+        return persistence.getPageMonitorItems().lean();
       }).then(function(pageMonitorItems) {
         assert.equal(pageMonitorItems.length, 2);
         pageMonitorItems = pageMonitorItems.map(function(pageMonitorItem) {
-          assert.equal(pageMonitorItem.createdAt >= userSaveStartDate, true);
           assert.equal(pageMonitorItem.updatedAt >= (pageMonitorItem.url === pages[0].url ? finalPollStartDate : startDate), true);
-          assert.equal(pageMonitorItem.createdAt <= startDate, true);
           assert.equal(pageMonitorItem.updatedAt <= (pageMonitorItem.url === pages[0].url ? endDate : failPollStartDate), true);
-          return pageMonitorItem.toJSON();
+          return pageMonitorItem;
         });
         assert.equal(pageMonitorItems[0].url, pages[0].url);
         assert.equal(pageMonitorItems[1].url, pages[1].url);
@@ -266,43 +246,37 @@ describe('Fetcher', function() {
         return feed.update();
       }).then(function() {
         endDate = new Date();
-        return persistence.getFeeds();
+        return persistence.getFeeds().lean();
       }).then(function(feeds) {
         assert.equal(feeds.length, 2);
         feeds = feeds.map(function(feed) {
-          assert.equal(feed.createdAt >= userSaveStartDate, true);
-          assert.equal(feed.updatedAt >= userSaveStartDate, true);
-          assert.equal(feed.createdAt <= startDate, true);
-          assert.equal(feed.updatedAt <= startDate, true);
-          feed = feed.toJSON();
-          feed.FeedItems.forEach(function(feedItem){
-            assert.equal(feedItem.createdAt >= startDate, true);
-            assert.equal(feedItem.updatedAt >= startDate, true);
-            assert.equal(feedItem.createdAt <= endDate, true);
-            assert.equal(feedItem.updatedAt <= endDate, true);
+          feed.items.forEach(function(feedItem){
+            assert.equal(feedItem.lastSeen >= startDate, true);
+            assert.equal(feedItem.lastSeen <= endDate, true);
             if(feedItem.url === 'http://site1/link2'){
               //No date in this item
               assert.equal(feedItem.date >= startDate, true);
               assert.equal(feedItem.date <= endDate, true);
               delete feedItem.date;
             }
-            delete feedItem.createdAt;
-            delete feedItem.updatedAt;
-            delete feedItem.id;
+            delete feedItem.lastSeen;
+            delete feedItem._id;
+            delete feedItem.__v;
           });
-          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
+          feed.items.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
+        feeds.sort(function(a, b){ return a.url.localeCompare(b.url); });
         assert.equal(feeds[0].url, feedFiles[0].url);
         assert.equal(feeds[1].url, feedFiles[1].url);
-        assert.deepEqual(feeds[0].FeedItems, [
-          { guid: 'http://sites-site1.com@@Item@1', title: 'Title 1', date: new Date('2016-06-08T10:34:00.000Z'), contents: 'Text 1', url: 'http://site1/link1', FeedUrl: 'http://sites-site1.com' },
-          { guid: 'http://sites-site1.com@@Item@2', title: 'Title 2', contents: 'Text 2', url: 'http://site1/link2', FeedUrl: 'http://sites-site1.com' },
-          { guid: 'http://sites-site1.com@@http://site1/link3', title: 'Title 3', date: new Date('2016-06-07T13:19:00.000Z'), contents: 'Text 3', url: 'http://site1/link3', FeedUrl: 'http://sites-site1.com' },
-          { guid: 'http://sites-site1.com@@Item@4', title: 'Title 4', date: new Date('2016-06-08T10:34:00.000Z'), contents: 'Content 4', url: 'http://site1/link4', FeedUrl: 'http://sites-site1.com' }
+        assert.deepEqual(feeds[0].items, [
+          { guid: 'http://sites-site1.com@@Item@1', title: 'Title 1', date: new Date('2016-06-08T10:34:00.000Z'), contents: 'Text 1', url: 'http://site1/link1' },
+          { guid: 'http://sites-site1.com@@Item@2', title: 'Title 2', contents: 'Text 2', url: 'http://site1/link2' },
+          { guid: 'http://sites-site1.com@@http://site1/link3', title: 'Title 3', date: new Date('2016-06-07T13:19:00.000Z'), contents: 'Text 3', url: 'http://site1/link3' },
+          { guid: 'http://sites-site1.com@@Item@4', title: 'Title 4', date: new Date('2016-06-08T10:34:00.000Z'), contents: 'Content 4', url: 'http://site1/link4' }
         ]);
-        assert.deepEqual(feeds[1].FeedItems, [
-          { guid: 'http://updates-site2.com@@Item@1', title: 'Title 1', date: new Date('2016-06-10T10:34:00.000Z'), contents: 'Text 1', url: 'http://site2/link1', FeedUrl: 'http://updates-site2.com' }
+        assert.deepEqual(feeds[1].items, [
+          { guid: 'http://updates-site2.com@@Item@1', title: 'Title 1', date: new Date('2016-06-10T10:34:00.000Z'), contents: 'Text 1', url: 'http://site2/link1' }
         ]);
       });
     });
@@ -324,38 +298,32 @@ describe('Fetcher', function() {
         return feed.update();
       }).then(function() {
         endDate = new Date();
-        return persistence.getFeeds();
+        return persistence.getFeeds().lean();
       }).then(function(feeds) {
         assert.equal(feeds.length, 1);
         feeds = feeds.map(function(feed) {
-          assert.equal(feed.createdAt >= userSaveStartDate, true);
-          assert.equal(feed.updatedAt >= userSaveStartDate, true);
-          assert.equal(feed.createdAt <= startDate, true);
-          assert.equal(feed.updatedAt <= startDate, true);
-          feed = feed.toJSON();
-          feed.FeedItems.forEach(function(feedItem){
-            assert.equal(feedItem.createdAt >= startDate, true);
-            assert.equal(feedItem.updatedAt >= startDate, true);
-            assert.equal(feedItem.createdAt <= endDate, true);
-            assert.equal(feedItem.updatedAt <= endDate, true);
+          feed.items.forEach(function(feedItem){
+            assert.equal(feedItem.lastSeen >= startDate, true);
+            assert.equal(feedItem.lastSeen <= endDate, true);
             if(feedItem.url === 'http://site1/link3-good'){
               //No date in this item
               assert.equal(feedItem.date >= startDate, true);
               assert.equal(feedItem.date <= endDate, true);
               delete feedItem.date;
             }
-            delete feedItem.createdAt;
-            delete feedItem.updatedAt;
-            delete feedItem.id;
+            delete feedItem.lastSeen;
+            delete feedItem._id;
+            delete feedItem.__v;
           });
-          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
+          feed.items.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
+        feeds.sort(function(a, b){ return a.url.localeCompare(b.url); });
         assert.equal(feeds[0].url, 'http://sites-site1.com');
-        assert.deepEqual(feeds[0].FeedItems, [
-          { guid: 'http://sites-site1.com@@Item@1', title: 'Title 1', date: new Date('2003-12-13T18:30:02.000Z'), contents: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<0 type="xhtml">\n  <div xmlns="http://www.w3.org/1999/xhtml">\n    <p>Content 1</p>\n  </div>\n</0>', url: 'http://site1/link1-good', FeedUrl: 'http://sites-site1.com' },
-          { guid: 'http://sites-site1.com@@http://site1/link2-good', title: 'Title 2', date: new Date('2003-12-14T18:30:02.000Z'), contents: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<0 type="xhtml">\n  <div xmlns="http://www.w3.org/1999/xhtml">\n    <p>Content 1</p>\n  </div>\n</0>', url: 'http://site1/link2-good', FeedUrl: 'http://sites-site1.com' },
-          { guid: 'http://sites-site1.com@@Item@3', title: 'Title 3', contents: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<0 type="xhtml">\n  <div xmlns="http://www.w3.org/1999/xhtml">\n    <p>Content 1</p>\n  </div>\n</0>', url: 'http://site1/link3-good', FeedUrl: 'http://sites-site1.com' }
+        assert.deepEqual(feeds[0].items, [
+          { guid: 'http://sites-site1.com@@Item@1', title: 'Title 1', date: new Date('2003-12-13T18:30:02.000Z'), contents: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<0 type="xhtml">\n  <div xmlns="http://www.w3.org/1999/xhtml">\n    <p>Content 1</p>\n  </div>\n</0>', url: 'http://site1/link1-good'},
+          { guid: 'http://sites-site1.com@@http://site1/link2-good', title: 'Title 2', date: new Date('2003-12-14T18:30:02.000Z'), contents: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<0 type="xhtml">\n  <div xmlns="http://www.w3.org/1999/xhtml">\n    <p>Content 1</p>\n  </div>\n</0>', url: 'http://site1/link2-good' },
+          { guid: 'http://sites-site1.com@@Item@3', title: 'Title 3', contents: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<0 type="xhtml">\n  <div xmlns="http://www.w3.org/1999/xhtml">\n    <p>Content 1</p>\n  </div>\n</0>', url: 'http://site1/link3-good' }
         ]);
       });
     });
@@ -377,30 +345,24 @@ describe('Fetcher', function() {
         return feed.update();
       }).then(function() {
         endDate = new Date();
-        return persistence.getFeeds();
+        return persistence.getFeeds().lean();
       }).then(function(feeds) {
         assert.equal(feeds.length, 1);
         feeds = feeds.map(function(feed) {
-          assert.equal(feed.createdAt >= userSaveStartDate, true);
-          assert.equal(feed.updatedAt >= userSaveStartDate, true);
-          assert.equal(feed.createdAt <= startDate, true);
-          assert.equal(feed.updatedAt <= startDate, true);
-          feed = feed.toJSON();
-          feed.FeedItems.forEach(function(feedItem){
-            assert.equal(feedItem.createdAt >= startDate, true);
-            assert.equal(feedItem.updatedAt >= startDate, true);
-            assert.equal(feedItem.createdAt <= endDate, true);
-            assert.equal(feedItem.updatedAt <= endDate, true);
-            delete feedItem.createdAt;
-            delete feedItem.updatedAt;
-            delete feedItem.id;
+          feed.items.forEach(function(feedItem){
+            assert.equal(feedItem.lastSeen >= startDate, true);
+            assert.equal(feedItem.lastSeen <= endDate, true);
+            delete feedItem.lastSeen;
+            delete feedItem._id;
+            delete feedItem.__v;
           });
-          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
+          feed.items.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
+        feeds.sort(function(a, b){ return a.url.localeCompare(b.url); });
         assert.equal(feeds[0].url, 'http://sites-site1.com');
-        assert.deepEqual(feeds[0].FeedItems, [
-          { guid: 'http://sites-site1.com@@http://site1/link1', title: 'Title 1', date: new Date('2013-09-26T21:36:20.000Z'), contents: 'Description 1', url: 'http://site1/link1', FeedUrl: 'http://sites-site1.com' }
+        assert.deepEqual(feeds[0].items, [
+          { guid: 'http://sites-site1.com@@http://site1/link1', title: 'Title 1', date: new Date('2013-09-26T21:36:20.000Z'), contents: 'Description 1', url: 'http://site1/link1' }
         ]);
       });
     });
@@ -438,31 +400,24 @@ describe('Fetcher', function() {
         return feed.update();
       }).then(function() {
         endDate = new Date();
-        return persistence.getFeeds();
+        return persistence.getFeeds().lean();
       }).then(function(feeds) {
         assert.equal(feeds.length, 2);
         feeds = feeds.map(function(feed) {
-          assert.equal(feed.createdAt >= userSaveStartDate, true);
-          assert.equal(feed.updatedAt >= userSaveStartDate, true);
-          assert.equal(feed.createdAt <= startDate, true);
-          assert.equal(feed.updatedAt <= startDate, true);
-          feed = feed.toJSON();
-          feed.FeedItems.forEach(function(feedItem){
-            assert.equal(feedItem.createdAt >= (newItems.includes(feedItem.url) ? updateDate : startDate), true);
-            assert.equal(feedItem.updatedAt >= (notUpdatedLinks.includes(feedItem.url) ? startDate : updateDate), true);
-            assert.equal(feedItem.createdAt <= (newItems.includes(feedItem.url) ? endDate : updateDate), true);
-            assert.equal(feedItem.updatedAt <= (notUpdatedLinks.includes(feedItem.url) ? updateDate : endDate), true);
+          feed.items.forEach(function(feedItem){
+            assert.equal(feedItem.lastSeen >= (notUpdatedLinks.includes(feedItem.url) ? startDate : updateDate), true);
+            assert.equal(feedItem.lastSeen <= (notUpdatedLinks.includes(feedItem.url) ? updateDate : endDate), true);
             if(feedItem.url === 'http://site1/link2'){
               //No date in this item
               assert.equal(feedItem.date >= updateDate, true);
               assert.equal(feedItem.date <= endDate, true);
               delete feedItem.date;
             }
-            delete feedItem.createdAt;
-            delete feedItem.updatedAt;
-            delete feedItem.id;
+            delete feedItem.lastSeen;
+            delete feedItem._id;
+            delete feedItem.__v;
           });
-          feed.FeedItems.sort(function(a, b){
+          feed.items.sort(function(a, b){
             var comparison = a.url.localeCompare(b.url);
             if(comparison !== 0)  return comparison;
             var comparison = a.title.localeCompare(b.title);
@@ -471,18 +426,19 @@ describe('Fetcher', function() {
           });
           return feed;
         });
+        feeds.sort(function(a, b){ return a.url.localeCompare(b.url); });
         assert.equal(feeds[0].url, feedFiles[0].url);
         assert.equal(feeds[1].url, feedFiles[1].url);
-        assert.deepEqual(feeds[0].FeedItems, [
-          { guid: 'http://sites-site1.com@@Item@1', title: 'Title 1', date: new Date('2016-06-08T10:34:00.000Z'), contents: 'Text 1', url: 'http://site1/link1', FeedUrl: 'http://sites-site1.com' },
-          { guid: 'http://sites-site1.com@@Item@2', title: 'Title 2 (updated)', contents: 'Text 2', url: 'http://site1/link2', FeedUrl: 'http://sites-site1.com' },
-          { guid: 'http://sites-site1.com@@http://site1/link3', title: 'Title 3', date: new Date('2016-06-07T13:19:00.000Z'), contents: 'Text 3', url: 'http://site1/link3', FeedUrl: 'http://sites-site1.com' },
-          { guid: 'http://sites-site1.com@@http://site1/link3-updated', title: 'Title 3', date: new Date('2016-06-07T13:19:00.000Z'), contents: 'Text 3', url: 'http://site1/link3-updated', FeedUrl: 'http://sites-site1.com' },
-          { guid: 'http://sites-site1.com@@Item@4', title: 'Title 4', date: new Date('2016-06-08T10:34:00.000Z'), contents: 'Content 4 (updated)', url: 'http://site1/link4', FeedUrl: 'http://sites-site1.com' },
-          { guid: 'http://sites-site1.com@@Item@5', title: 'Title 5', date: new Date('2016-06-11T10:34:00.000Z'), contents: 'Text 5', url: 'http://site1/link5', FeedUrl: 'http://sites-site1.com' }
+        assert.deepEqual(feeds[0].items, [
+          { guid: 'http://sites-site1.com@@Item@1', title: 'Title 1', date: new Date('2016-06-08T10:34:00.000Z'), contents: 'Text 1', url: 'http://site1/link1' },
+          { guid: 'http://sites-site1.com@@Item@2', title: 'Title 2 (updated)', contents: 'Text 2', url: 'http://site1/link2' },
+          { guid: 'http://sites-site1.com@@http://site1/link3', title: 'Title 3', date: new Date('2016-06-07T13:19:00.000Z'), contents: 'Text 3', url: 'http://site1/link3' },
+          { guid: 'http://sites-site1.com@@http://site1/link3-updated', title: 'Title 3', date: new Date('2016-06-07T13:19:00.000Z'), contents: 'Text 3', url: 'http://site1/link3-updated' },
+          { guid: 'http://sites-site1.com@@Item@4', title: 'Title 4', date: new Date('2016-06-08T10:34:00.000Z'), contents: 'Content 4 (updated)', url: 'http://site1/link4' },
+          { guid: 'http://sites-site1.com@@Item@5', title: 'Title 5', date: new Date('2016-06-11T10:34:00.000Z'), contents: 'Text 5', url: 'http://site1/link5' }
         ]);
-        assert.deepEqual(feeds[1].FeedItems, [
-          { guid: 'http://updates-site2.com@@Item@1', title: 'Title 1', date: new Date('2016-06-10T10:34:00.000Z'), contents: 'Text 1', url: 'http://site2/link1', FeedUrl: 'http://updates-site2.com' }
+        assert.deepEqual(feeds[1].items, [
+          { guid: 'http://updates-site2.com@@Item@1', title: 'Title 1', date: new Date('2016-06-10T10:34:00.000Z'), contents: 'Text 1', url: 'http://site2/link1' }
         ]);
       });
     });
@@ -521,85 +477,73 @@ describe('Fetcher', function() {
         return feed.update();
       }).then(function() {
         failPollEndDate = new Date();
-        return persistence.getFeeds();
+        return persistence.getFeeds().lean();
       }).then(function(feeds) {
         assert.equal(feeds.length, 2);
         feeds = feeds.map(function(feed) {
-          assert.equal(feed.createdAt >= userSaveStartDate, true);
-          assert.equal(feed.updatedAt >= userSaveStartDate, true);
-          assert.equal(feed.createdAt <= startDate, true);
-          assert.equal(feed.updatedAt <= startDate, true);
-          feed = feed.toJSON();
-          feed.FeedItems.forEach(function(feedItem){
-            assert.equal(feedItem.createdAt >= startDate, true);
-            assert.equal(feedItem.updatedAt >= startDate, true);
-            assert.equal(feedItem.createdAt <= failPollStartDate, true);
-            assert.equal(feedItem.updatedAt <= failPollEndDate, true);
+          feed.items.forEach(function(feedItem){
+            assert.equal(feedItem.lastSeen >= startDate, true);
+            assert.equal(feedItem.lastSeen <= failPollEndDate, true);
             if(feedItem.url === 'http://site1/link2'){
               //No date in this item
               assert.equal(feedItem.date >= startDate, true);
               assert.equal(feedItem.date <= failPollStartDate, true);
               delete feedItem.date;
             }
-            delete feedItem.createdAt;
-            delete feedItem.updatedAt;
-            delete feedItem.id;
+            delete feedItem.lastSeen;
+            delete feedItem._id;
+            delete feedItem.__v;
           });
-          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
+          feed.items.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
+        feeds.sort(function(a, b){ return a.url.localeCompare(b.url); });
         assert.equal(feeds[0].url, feedFiles[0].url);
         assert.equal(feeds[1].url, feedFiles[1].url);
-        assert.deepEqual(feeds[0].FeedItems, [
-          { guid: 'http://sites-site1.com@@Item@1', title: 'Title 1', date: new Date('2016-06-08T10:34:00.000Z'), contents: 'Text 1', url: 'http://site1/link1', FeedUrl: 'http://sites-site1.com' },
-          { guid: 'http://sites-site1.com@@Item@2', title: 'Title 2', contents: 'Text 2', url: 'http://site1/link2', FeedUrl: 'http://sites-site1.com' },
-          { guid: 'http://sites-site1.com@@http://site1/link3', title: 'Title 3', date: new Date('2016-06-07T13:19:00.000Z'), contents: 'Text 3', url: 'http://site1/link3', FeedUrl: 'http://sites-site1.com' },
-          { guid: 'http://sites-site1.com@@Item@4', title: 'Title 4', date: new Date('2016-06-08T10:34:00.000Z'), contents: 'Content 4', url: 'http://site1/link4', FeedUrl: 'http://sites-site1.com' }
+        assert.deepEqual(feeds[0].items, [
+          { guid: 'http://sites-site1.com@@Item@1', title: 'Title 1', date: new Date('2016-06-08T10:34:00.000Z'), contents: 'Text 1', url: 'http://site1/link1' },
+          { guid: 'http://sites-site1.com@@Item@2', title: 'Title 2', contents: 'Text 2', url: 'http://site1/link2' },
+          { guid: 'http://sites-site1.com@@http://site1/link3', title: 'Title 3', date: new Date('2016-06-07T13:19:00.000Z'), contents: 'Text 3', url: 'http://site1/link3' },
+          { guid: 'http://sites-site1.com@@Item@4', title: 'Title 4', date: new Date('2016-06-08T10:34:00.000Z'), contents: 'Content 4', url: 'http://site1/link4' }
         ]);
-        assert.deepEqual(feeds[1].FeedItems, [
-          { guid: 'http://updates-site2.com@@Item@1', title: 'Title 1', date: new Date('2016-06-10T10:34:00.000Z'), contents: 'Text 1', url: 'http://site2/link1', FeedUrl: 'http://updates-site2.com' }
+        assert.deepEqual(feeds[1].items, [
+          { guid: 'http://updates-site2.com@@Item@1', title: 'Title 1', date: new Date('2016-06-10T10:34:00.000Z'), contents: 'Text 1', url: 'http://site2/link1' }
         ]);
         finalPollStartDate = new Date();
         return feed.update();
       }).then(function() {
         endDate = new Date();
-        return persistence.getFeeds();
+        return persistence.getFeeds().lean();
       }).then(function(feeds) {
         assert.equal(feeds.length, 2);
         feeds = feeds.map(function(feed) {
-          assert.equal(feed.createdAt >= userSaveStartDate, true);
-          assert.equal(feed.updatedAt >= userSaveStartDate, true);
-          assert.equal(feed.createdAt <= startDate, true);
-          assert.equal(feed.updatedAt <= startDate, true);
-          feed = feed.toJSON();
-          feed.FeedItems.forEach(function(feedItem){
-            assert.equal(feedItem.createdAt >= startDate, true);
-            assert.equal(feedItem.updatedAt >= finalPollStartDate, true);
-            assert.equal(feedItem.createdAt <= failPollStartDate, true);
-            assert.equal(feedItem.updatedAt <= endDate, true);
+          feed.items.forEach(function(feedItem){
+            assert.equal(feedItem.lastSeen >= finalPollStartDate, true);
+            assert.equal(feedItem.lastSeen <= endDate, true);
             if(feedItem.url === 'http://site1/link2'){
               //No date in this item
               assert.equal(feedItem.date >= startDate, true);
               assert.equal(feedItem.date <= (feedItem.url === 'http://site1/link2' ? endDate : failPollStartDate), true);
               delete feedItem.date;
             }
-            delete feedItem.createdAt;
-            delete feedItem.updatedAt;
-            delete feedItem.id;
+            delete feedItem.lastSeen;
+            delete feedItem._id;
+            delete feedItem.__v;
           });
-          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
+          feed.items.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
+        feeds.sort(function(a, b){ return a.url.localeCompare(b.url); });
         assert.equal(feeds[0].url, feedFiles[0].url);
         assert.equal(feeds[1].url, feedFiles[1].url);
-        assert.deepEqual(feeds[0].FeedItems, [
-          { guid: 'http://sites-site1.com@@Item@1', title: 'Title 1', date: new Date('2016-06-08T10:34:00.000Z'), contents: 'Text 1', url: 'http://site1/link1', FeedUrl: 'http://sites-site1.com' },
-          { guid: 'http://sites-site1.com@@Item@2', title: 'Title 2', contents: 'Text 2', url: 'http://site1/link2', FeedUrl: 'http://sites-site1.com' },
-          { guid: 'http://sites-site1.com@@http://site1/link3', title: 'Title 3', date: new Date('2016-06-07T13:19:00.000Z'), contents: 'Text 3', url: 'http://site1/link3', FeedUrl: 'http://sites-site1.com' },
-          { guid: 'http://sites-site1.com@@Item@4', title: 'Title 4', date: new Date('2016-06-08T10:34:00.000Z'), contents: 'Content 4', url: 'http://site1/link4', FeedUrl: 'http://sites-site1.com' }
+        assert.deepEqual(feeds[0].items, [
+          { guid: 'http://sites-site1.com@@Item@1', title: 'Title 1', date: new Date('2016-06-08T10:34:00.000Z'), contents: 'Text 1', url: 'http://site1/link1' },
+          { guid: 'http://sites-site1.com@@Item@2', title: 'Title 2', contents: 'Text 2', url: 'http://site1/link2' },
+          { guid: 'http://sites-site1.com@@http://site1/link3', title: 'Title 3', date: new Date('2016-06-07T13:19:00.000Z'), contents: 'Text 3', url: 'http://site1/link3' },
+          { guid: 'http://sites-site1.com@@Item@4', title: 'Title 4', date: new Date('2016-06-08T10:34:00.000Z'), contents: 'Content 4', url: 'http://site1/link4' }
         ]);
-        assert.deepEqual(feeds[1].FeedItems, [
-          { guid: 'http://updates-site2.com@@Item@1', title: 'Title 1', date: new Date('2016-06-10T10:34:00.000Z'), contents: 'Text 1', url: 'http://site2/link1', FeedUrl: 'http://updates-site2.com' }
+        assert.deepEqual(feeds[1].items, [
+          { guid: 'http://updates-site2.com@@Item@1', title: 'Title 1', date: new Date('2016-06-10T10:34:00.000Z'), contents: 'Text 1', url: 'http://site2/link1' }
         ]);
       });
     });

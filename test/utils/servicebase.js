@@ -1,4 +1,3 @@
-var dbConfiguration = require('./dbconfiguration');
 var persistence = require('../../lib/services/persistence');
 var logger = require('../../lib/services/logger').logger;
 var superagent = require('superagent');
@@ -27,7 +26,6 @@ var tokenHeader = function(token){
 
 var hooks = function(){
   var server;
-  var jsDate;
   before(function(done){
     app.set('port', port);
     server = http.createServer(app);
@@ -39,15 +37,7 @@ var hooks = function(){
   });
 
   beforeEach(function() {
-    jsDate = Date;
     logger.info(this.currentTest.fullTitle());
-    dbConfiguration.reconfigureDb();
-    return persistence.init({force: true});
-  });
-
-  afterEach(function() {
-    Date = jsDate;
-    return persistence.close();
   });
 }
 

@@ -24,7 +24,7 @@ app.set('port', port);
 var server = http.createServer(app);
 
 /**
- * Init Sequelize, then listen on provided port, on all network interfaces.
+ * Init the persistence layer, then listen on provided port, on all network interfaces.
  */
 
 persistence.init().then(function () {

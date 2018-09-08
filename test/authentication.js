@@ -1,6 +1,7 @@
 var serviceBase = require('./utils/servicebase')
 var assert = require('assert');
 var persistence = require('../lib/services/persistence');
+var persistencebase = require('./utils/persistencebase');
 var superagent = require('superagent');
 var uuid = require('uuid/v4');
 
@@ -18,6 +19,8 @@ var prepopulate = function() {
 describe('Service', function() {
   serviceBase.hooks();
 
+  persistencebase.hooks();
+
   afterEach(function() {
     delete process.env.TOKEN_EXPIRES_DAYS;
   });
@@ -34,10 +37,9 @@ describe('Service', function() {
             assert.equal(result.status, 200);
             assert.ok(token);
           } catch(err) {done(err);}
-          user.reload({ include: [{ all: true }]}).then(function(user){
-            assert.equal(user.Tokens.length, 1);
-            assert.equal(user.Tokens[0].id, token);
-            assert.equal(user.Tokens[0].UserId, 1);
+          persistence.getUserTokens().then(function(tokens){
+            assert.equal(tokens.length, 1);
+            assert.equal(tokens[0].token, token);
             done();
           }).catch(done);
         });
@@ -52,21 +54,20 @@ describe('Service', function() {
             assert.equal(result.status, 200);
             assert.ok(token);
           } catch(err) {done(err);}
-          user.reload({ include: [{ all: true }]}).then(function(user){
-            assert.equal(user.Tokens.length, 1);
-            assert.equal(user.Tokens[0].id, token);
-            assert.equal(user.Tokens[0].UserId, 1);
-            superagent.post(baseUrl + "/oauth/logout").set(tokenHeader(token)).send("token="+token).end(function(err, result){
-              if(err) return done(err);
-              try {
-                assert.ok(result);
-                assert.equal(result.status, 200);
-                assert.equal(result.text, "");
-                user.reload({ include: [{ all: true }]}).then(function(user){
-                  assert.deepEqual(user.Tokens, []);
-                  done();
-                }).catch(done);
-              } catch(err) {done(err);}
+            persistence.getUserTokens().then(function(tokens){
+              assert.equal(tokens.length, 1);
+              assert.equal(tokens[0].token, token);
+              superagent.post(baseUrl + "/oauth/logout").set(tokenHeader(token)).send("token="+token).end(function(err, result){
+                if(err) return done(err);
+                try {
+                  assert.ok(result);
+                  assert.equal(result.status, 200);
+                  assert.equal(result.text, "");
+                  persistence.getUserTokens().then(function(tokens){
+                    assert.deepEqual(tokens.toObject(), []);
+                    done();
+                  }).catch(done);
+                } catch(err) {done(err);}
             });
           }).catch(done);
         });
@@ -83,18 +84,17 @@ describe('Service', function() {
           try {
             assert.equal(result.status, 200);
             assert.ok(token);
-            user.reload({ include: [{ all: true }]}).then(function(user){
-              assert.equal(user.Tokens.length, 1);
-              assert.equal(user.Tokens[0].id, token);
-              assert.equal(user.Tokens[0].UserId, 1);
+            persistence.getUserTokens().then(function(tokens){
+              assert.equal(tokens.length, 1);
+              assert.equal(tokens[0].token, token);
               setTimeout(function(){
                 superagent.post(baseUrl + "/oauth/logout").set(tokenHeader(token)).send("token="+token).end(function(err, result){
                   try {
                     assert.ok(err);
                     assert.equal(result.status, 401);
                     assert.equal(result.text, "Unauthorized");
-                    user.reload({ include: [{ all: true }]}).then(function(user){
-                      assert.deepEqual(user.Tokens, []);
+                    persistence.getUserTokens().then(function(tokens){
+                      assert.deepEqual(tokens.toObject(), []);
                       done();
                     }).catch(done);
                   } catch(err) {done(err);}
@@ -115,14 +115,13 @@ describe('Service', function() {
           try {
             assert.equal(result.status, 200);
             assert.ok(token);
-            user.reload({ include: [{ all: true }]}).then(function(user){
-              assert.equal(user.Tokens.length, 1);
-              assert.equal(user.Tokens[0].id, token);
-              assert.equal(user.Tokens[0].UserId, 1);
+            persistence.getUserTokens().then(function(tokens){
+              assert.equal(tokens.length, 1);
+              assert.equal(tokens[0].token, token);
               setTimeout(function(){
                 persistence.cleanupExpiredTokens().then(function(){
-                  return user.reload({ include: [{ all: true }]}).then(function(user){
-                    assert.deepEqual(user.Tokens, []);
+                  return persistence.getUserTokens().then(function(tokens){
+                    assert.deepEqual(tokens.toObject(), []);
                     done();
                   });
                 }).catch(done);
@@ -158,12 +157,10 @@ describe('Service', function() {
                 assert.equal(result.status, 200);
                 assert.equal(token2, "2");
                 assert.equal(generatorCounter, 6);
-                return user.reload({ include: [{ all: true }]}).then(function(user){
-                  assert.equal(user.Tokens.length, 2);
-                  assert.equal(user.Tokens[0].id, "1");
-                  assert.equal(user.Tokens[0].UserId, 1);
-                  assert.equal(user.Tokens[1].id, "2");
-                  assert.equal(user.Tokens[1].UserId, 1);
+                return persistence.getUserTokens().then(function(tokens){
+                  assert.equal(tokens.length, 2);
+                  assert.equal(tokens[0].token, "1");
+                  assert.equal(tokens[1].token, "2");
                   done();
                 });
               } catch(err) {done(err);}
@@ -199,10 +196,9 @@ describe('Service', function() {
                 assert.equal(!!token2, false);
                 assert.equal(generatorCounter, 1 + 5);
                 assert.deepEqual(err.response.body, {error:"server_error", error_description:"Cannot create token"});
-                return user.reload({ include: [{ all: true }]}).then(function(user){
-                  assert.equal(user.Tokens.length, 1);
-                  assert.equal(user.Tokens[0].id, "1");
-                  assert.equal(user.Tokens[0].UserId, 1);
+                return persistence.getUserTokens().then(function(tokens){
+                  assert.equal(tokens.length, 1);
+                  assert.equal(tokens[0].token, "1");
                   done();
                 });
               } catch(err) {done(err);}
@@ -234,19 +230,17 @@ describe('Service', function() {
             assert.equal(result.status, 200);
             assert.ok(token);
           } catch(err) {done(err);}
-          user.reload({ include: [{ all: true }]}).then(function(user){
-            assert.equal(user.Tokens.length, 1);
-            assert.equal(user.Tokens[0].id, token);
-            assert.equal(user.Tokens[0].UserId, 1);
+          persistence.getUserTokens().then(function(tokens){
+            assert.equal(tokens.length, 1);
+            assert.equal(tokens[0].token, token);
             superagent.post(baseUrl + "/oauth/logout").set(tokenHeader(token)).send("token=badtoken").end(function(err, result){
               try {
                 assert.ok(err);
                 assert.equal(result.status, 500);
                 assert.deepEqual(result.body, {error:"server_error", error_description:"Cannot delete non-existing token"});
-                user.reload({ include: [{ all: true }]}).then(function(user){
-                  assert.equal(user.Tokens.length, 1);
-                  assert.equal(user.Tokens[0].id, token);
-                  assert.equal(user.Tokens[0].UserId, 1);
+                persistence.getUserTokens().then(function(tokens){
+                  assert.equal(tokens.length, 1);
+                  assert.equal(tokens[0].token, token);
                   done();
                 }).catch(done);
               } catch(err) {done(err);}

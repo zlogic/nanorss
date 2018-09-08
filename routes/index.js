@@ -13,7 +13,7 @@ router.get(['/', '/login', '/feed', '/configuration'], function(req, res, next) 
 router.get('/feeditem/:id', function(req, res, next) {
   var id = req.params.id;
   persistence.findFeedItem(id).then(function(feedItem){
-    if(feedItem === null){
+    if(feedItem === undefined){
       var error = new Error('Item not found');
       error.status = 404;
       return next(error);

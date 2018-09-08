@@ -2,9 +2,8 @@ var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
 
-var dbConfiguration = require('./utils/dbconfiguration');
+var persistencebase = require('./utils/persistencebase');
 var persistence = require('../lib/services/persistence');
-var logger = require('../lib/services/logger').logger;
 require('./utils/logging');
 
 var loadFile = function(filename) {
@@ -17,15 +16,7 @@ var loadFile = function(filename) {
 };
 
 describe('Persistence', function() {
-  beforeEach(function() {
-    logger.info(this.currentTest.fullTitle());
-    dbConfiguration.reconfigureDb();
-    return persistence.init({force: true});
-  });
-
-  afterEach(function() {
-    return persistence.close();
-  });
+  persistencebase.hooks();
 
   describe('user', function () {
     it('should create a new user with an empty database', function () {
@@ -59,90 +50,73 @@ describe('Persistence', function() {
         url: 'http://item',
         contents: 'contents',
         delta: 'delta',
-        error: null,
-        flags: null,
-        match: null,
-        replace: null,
         title: 'Item 1'
       };
-      var startDate, startSaveDate;
+      var startDate;
       return persistence.getUserData().then(function(userData){
         user = userData;
         return loadFile('pagemonitor_1_item.xml').then(function(config) {
           user.pagemonitor = config;
-          startDate = new Date();
           return user.save();
         });
       }).then(function(user) {
-        startSaveDate = new Date();
-        savePageMonitorItem.UserId = user.id;
+        startDate = new Date();
         return persistence.getPageMonitorItems().then(function(pageMonitorItems){
           assert.equal(pageMonitorItems.length, 1);
           pageMonitorItems[0].contents = savePageMonitorItem.contents;
           pageMonitorItems[0].delta = savePageMonitorItem.delta;
-          return pageMonitorItems[0].save();
+          return persistence.savePageMonitorItem(pageMonitorItems[0]);
         });
       }).then(function(pageMonitorItem){
         var endDate = new Date();
-        pageMonitorItem = pageMonitorItem.toJSON();
-        assert.equal(pageMonitorItem.createdAt >= startDate, true);
-        assert.equal(pageMonitorItem.updatedAt >= startSaveDate, true);
-        assert.equal(pageMonitorItem.createdAt <= startSaveDate, true);
+        pageMonitorItem = pageMonitorItem.toObject();
+        assert.equal(pageMonitorItem.updatedAt >= startDate, true);
         assert.equal(pageMonitorItem.updatedAt <= endDate, true);
-        delete pageMonitorItem.createdAt;
         delete pageMonitorItem.updatedAt;
-        delete pageMonitorItem.id;
+        delete pageMonitorItem._id;
+        delete pageMonitorItem.__v;
         assert.deepEqual(pageMonitorItem, savePageMonitorItem);
       });
     });
     it('should be able to read all saved page monitor items', function () {
       var savePageMonitorItems = [{ url: 'http://item1', contents: 'contents1', delta: 'delta1', title: 'Item 1' }, { url: 'http://item2', contents: 'contents2', delta: 'delta2', title: 'Item 2' }];
-      var startDate, startSaveDate;
-      var endDate;
+      var startDate, endDate;
       return persistence.getUserData().then(function(userData){
         user = userData;
         return loadFile('pagemonitor_2_items.xml').then(function(config) {
           user.pagemonitor = config;
-          startDate = new Date();
           return user.save();
         });
       }).then(function(user) {
-        startSaveDate = new Date();
         return persistence.getPageMonitorItems().then(function(pageMonitorItems){
           pageMonitorItems.forEach(function(pageMonitorItem) {
             var savePageMonitorItem = savePageMonitorItems.find(function(savePageMonitorItem){ return savePageMonitorItem.url === pageMonitorItem.url; })
             pageMonitorItem.contents = savePageMonitorItem.contents;
             pageMonitorItem.delta = savePageMonitorItem.delta;
-            savePageMonitorItem.flags = null;
-            savePageMonitorItem.match = null;
-            savePageMonitorItem.replace = null;
-            savePageMonitorItem.error = null;
-            savePageMonitorItem.UserId = user.id;
-            savePageMonitorItem.id = pageMonitorItem.id;
           })
-          return Promise.all(pageMonitorItems.map(function(pageMonitorItem) {return pageMonitorItem.save();}));
+          startDate = new Date();
+          return Promise.all(pageMonitorItems.map(persistence.savePageMonitorItem));
         });
       }).then(function() {
         endDate = new Date();
-        return persistence.getPageMonitorItems();
+        return persistence.getPageMonitorItems().lean();
       }).then(function(pageMonitorItems) {
         assert.equal(pageMonitorItems.length, 2);
         pageMonitorItems = pageMonitorItems.map(function(pageMonitorItem) {
-          pageMonitorItem = pageMonitorItem.toJSON();
-          assert.equal(pageMonitorItem.createdAt >= startDate, true);
-          assert.equal(pageMonitorItem.updatedAt >= startSaveDate, true);
-          assert.equal(pageMonitorItem.createdAt <= startSaveDate, true);
+          assert.equal(pageMonitorItem.updatedAt >= startDate, true);
           assert.equal(pageMonitorItem.updatedAt <= endDate, true);
-          delete pageMonitorItem.createdAt;
           delete pageMonitorItem.updatedAt;
+          delete pageMonitorItem._id;
+          delete pageMonitorItem.__v;
           return pageMonitorItem;
         });
+        pageMonitorItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
         assert.deepEqual(pageMonitorItems, savePageMonitorItems);
       });
     });
     it('should be able to update a saved page monitor item', function () {
       var savePageMonitorItems = [{ url: 'http://item1', contents: 'contents1', delta: 'delta1', title: 'Item 1' }, { url: 'http://item2', contents: 'contents2', delta: 'delta2', title: 'Item 2' }];
-      var startDate, startSaveDate;
+      var startDate;
       var endDate;
       var updateStartDate;
       var updateEndDate;
@@ -154,20 +128,14 @@ describe('Persistence', function() {
           return user.save();
         });
       }).then(function(user) {
-        startSaveDate = new Date();
+        startDate = new Date();
         return persistence.getPageMonitorItems().then(function(pageMonitorItems){
           pageMonitorItems.forEach(function(pageMonitorItem) {
             var savePageMonitorItem = savePageMonitorItems.find(function(savePageMonitorItem){ return savePageMonitorItem.url === pageMonitorItem.url; })
             pageMonitorItem.contents = savePageMonitorItem.contents;
             pageMonitorItem.delta = savePageMonitorItem.delta;
-            savePageMonitorItem.flags = null;
-            savePageMonitorItem.match = null;
-            savePageMonitorItem.replace = null;
-            savePageMonitorItem.error = null;
-            savePageMonitorItem.UserId = user.id;
-            savePageMonitorItem.id = pageMonitorItem.id;
           })
-          return Promise.all(pageMonitorItems.map(function(pageMonitorItem) {return pageMonitorItem.save();}));
+          return Promise.all(pageMonitorItems.map(persistence.savePageMonitorItem));
         });
       }).then(function() {
         endDate = new Date();
@@ -175,15 +143,15 @@ describe('Persistence', function() {
       }).then(function(pageMonitorItems) {
         assert.equal(pageMonitorItems.length, 2);
         var checkPageMonitorItems = pageMonitorItems.map(function(pageMonitorItem) {
-          pageMonitorItem = pageMonitorItem.toJSON();
-          assert.equal(pageMonitorItem.createdAt >= startDate, true);
-          assert.equal(pageMonitorItem.updatedAt >= startSaveDate, true);
-          assert.equal(pageMonitorItem.createdAt <= startSaveDate, true);
+          pageMonitorItem = pageMonitorItem.toObject();
+          assert.equal(pageMonitorItem.updatedAt >= startDate, true);
           assert.equal(pageMonitorItem.updatedAt <= endDate, true);
-          delete pageMonitorItem.createdAt;
           delete pageMonitorItem.updatedAt;
+          delete pageMonitorItem._id;
+          delete pageMonitorItem.__v;
           return pageMonitorItem;
         });
+        checkPageMonitorItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
         assert.deepEqual(checkPageMonitorItems, savePageMonitorItems);
         savePageMonitorItems[0].contents = 'contents1-updated';
         savePageMonitorItems[0].delta = 'delta1-updated';
@@ -191,64 +159,55 @@ describe('Persistence', function() {
         pageMonitorItem.contents = savePageMonitorItems[0].contents;
         pageMonitorItem.delta = savePageMonitorItems[0].delta;
         updateStartDate = new Date();
-        return pageMonitorItem.save();
+        return persistence.savePageMonitorItem(pageMonitorItem);
       }).then(function() {
         updateEndDate = new Date();
         return persistence.getPageMonitorItems();
       }).then(function(pageMonitorItems) {
         assert.equal(pageMonitorItems.length, 2);
         pageMonitorItems = pageMonitorItems.map(function(pageMonitorItem) {
-          pageMonitorItem = pageMonitorItem.toJSON();
-          assert.equal(pageMonitorItem.createdAt >= startDate, true);
-          assert.equal(pageMonitorItem.createdAt <= startSaveDate, true);
-          assert.equal(pageMonitorItem.updatedAt >= (pageMonitorItem.url === 'http://item1' ? updateStartDate : startSaveDate), true);
+          pageMonitorItem = pageMonitorItem.toObject();
+          assert.equal(pageMonitorItem.updatedAt >= (pageMonitorItem.url === 'http://item1' ? updateStartDate : startDate), true);
           assert.equal(pageMonitorItem.updatedAt <= (pageMonitorItem.url === 'http://item1' ? updateEndDate : endDate), true);
-          delete pageMonitorItem.createdAt;
           delete pageMonitorItem.updatedAt;
+          delete pageMonitorItem._id;
+          delete pageMonitorItem.__v;
           return pageMonitorItem;
         });
+        pageMonitorItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
         assert.deepEqual(pageMonitorItems, savePageMonitorItems);
       });
     });
     it('should be able to read a specific saved page monitor item', function () {
       var savePageMonitorItems = [{ url: 'http://item1', contents: 'contents1', delta: 'delta1', title: 'Item 1' }, { url: 'http://item2', contents: 'contents2', delta: 'delta2', title: 'Item 2' }];
-      var startDate, startSaveDate;
+      var startDate;
       var endDate;
       return persistence.getUserData().then(function(userData){
         user = userData;
         return loadFile('pagemonitor_2_items.xml').then(function(config) {
           user.pagemonitor = config;
-          startDate = new Date();
           return user.save();
         });
       }).then(function(user) {
-        startSaveDate = new Date();
+        startDate = new Date();
         return persistence.getPageMonitorItems().then(function(pageMonitorItems){
           pageMonitorItems.forEach(function(pageMonitorItem) {
             var savePageMonitorItem = savePageMonitorItems.find(function(savePageMonitorItem){ return savePageMonitorItem.url === pageMonitorItem.url; })
             pageMonitorItem.contents = savePageMonitorItem.contents;
             pageMonitorItem.delta = savePageMonitorItem.delta;
-            savePageMonitorItem.flags = null;
-            savePageMonitorItem.match = null;
-            savePageMonitorItem.replace = null;
-            savePageMonitorItem.error = null;
-            savePageMonitorItem.UserId = user.id;
-            savePageMonitorItem.id = pageMonitorItem.id;
           })
-          return Promise.all(pageMonitorItems.map(function(pageMonitorItem) {return pageMonitorItem.save();}));
+          return Promise.all(pageMonitorItems.map(persistence.savePageMonitorItem));
         });
       }).then(function() {
         endDate = new Date();
         return persistence.findPageMonitorItem('http://item1', 'url');
       }).then(function(pageMonitorItem) {
-        var endDate = new Date();
-        pageMonitorItem = pageMonitorItem.toJSON();
-        assert.equal(pageMonitorItem.createdAt >= startDate, true);
-        assert.equal(pageMonitorItem.updatedAt >= startSaveDate, true);
-        assert.equal(pageMonitorItem.createdAt <= startSaveDate, true);
+        pageMonitorItem = pageMonitorItem.toObject();
+        assert.equal(pageMonitorItem.updatedAt >= startDate, true);
         assert.equal(pageMonitorItem.updatedAt <= endDate, true);
-        delete pageMonitorItem.createdAt;
         delete pageMonitorItem.updatedAt;
+        delete pageMonitorItem._id;
+        delete pageMonitorItem.__v;
         assert.deepEqual(pageMonitorItem, savePageMonitorItems[0]);
       });
     });
@@ -268,12 +227,6 @@ describe('Persistence', function() {
             var savePageMonitorItem = savePageMonitorItems.find(function(savePageMonitorItem){ return savePageMonitorItem.url === pageMonitorItem.url; })
             pageMonitorItem.contents = savePageMonitorItem.contents;
             pageMonitorItem.delta = savePageMonitorItem.delta;
-            savePageMonitorItem.flags = null;
-            savePageMonitorItem.match = null;
-            savePageMonitorItem.replace = null;
-            savePageMonitorItem.error = null;
-            savePageMonitorItem.UserId = user.id;
-            savePageMonitorItem.id = pageMonitorItem.id;
           })
           return Promise.all(pageMonitorItems.map(function(pageMonitorItem) {return pageMonitorItem.save();}));
         });
@@ -295,22 +248,22 @@ describe('Persistence', function() {
       var endDate;
       return persistence.saveFeed('http://feed1', saveFeedItems).then(function() {
         endDate = new Date();
-        return persistence.getFeedItems();
-      }).then(function(feedItems){
+        return persistence.getFeeds().lean();
+      }).then(function(feeds){
+        var feedItems = [];
+        feeds.forEach(function(feed) {
+          feed.items.forEach(function(feedItem) {
+            feedItems.push(feedItem);
+          })
+        });
         feedItems = feedItems.map(function(feedItem) {
-          feedItem = feedItem.toJSON();
-          assert.equal(feedItem.createdAt >= startDate, true);
-          assert.equal(feedItem.updatedAt >= startDate, true);
-          assert.equal(feedItem.createdAt <= endDate, true);
-          assert.equal(feedItem.updatedAt <= endDate, true);
-          delete feedItem.createdAt;
-          delete feedItem.updatedAt;
-          delete feedItem.id;
-          delete feedItem.Feed;
+          assert.equal(feedItem.lastSeen >= startDate, true);
+          assert.equal(feedItem.lastSeen <= endDate, true);
+          delete feedItem._id;
+          delete feedItem.__v;
           return feedItem;
         });
         feedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
-        saveFeedItems.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed1'; });
         assert.deepEqual(feedItems, saveFeedItems);
       });
     });
@@ -329,30 +282,27 @@ describe('Persistence', function() {
         return persistence.saveFeed('http://feed2', saveFeedItems2);
       }).then(function() {
         endDate = new Date();
-        return persistence.getFeedItems();
-      }).then(function(feedItems) {
+        return persistence.getFeeds();
+      }).then(function(feeds) {
+        var feedItems = [];
+        feeds.forEach(function(feed) {
+          feed.items.forEach(function(feedItem) {
+            assert.equal(feedItem.lastSeen >= startDate, true);
+            assert.equal(feedItem.lastSeen <= endDate, true);
+            var feedUrl = feedItem.url.match(/^(http:\/\/[^\/]+)\/.*$/)[1];
+            assert.equal(feed.url, feedUrl);
+            feedItems.push(feedItem.toObject());
+          })
+        });
         assert.equal(feedItems.length, 4);
         feedItems = feedItems.map(function(feedItem) {
-          feedItem = feedItem.toJSON();
-          assert.equal(feedItem.createdAt >= startDate, true);
-          assert.equal(feedItem.updatedAt >= startDate, true);
-          assert.equal(feedItem.createdAt <= endDate, true);
-          assert.equal(feedItem.updatedAt <= endDate, true);
-          assert.equal(feedItem.Feed.createdAt >= startDate, true);
-          assert.equal(feedItem.Feed.updatedAt >= startDate, true);
-          assert.equal(feedItem.Feed.createdAt <= endDate, true);
-          assert.equal(feedItem.Feed.updatedAt <= endDate, true);
-          var feedUrl = feedItem.url.match(/^(http:\/\/[^\/]+)\/.*$/)[1];
-          assert.equal(feedItem.Feed.url, feedUrl);
-          delete feedItem.createdAt;
-          delete feedItem.updatedAt;
-          delete feedItem.id;
-          delete feedItem.Feed;
+          assert.equal(feedItem.lastSeen >= startDate, true);
+          assert.equal(feedItem.lastSeen <= endDate, true);
+          delete feedItem._id;
+          delete feedItem.__v;
           return feedItem;
         });
         feedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
-        saveFeedItems1.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed1'; });
-        saveFeedItems2.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed2'; });
         assert.deepEqual(feedItems, saveFeedItems1.concat(saveFeedItems2));
       });
     });
@@ -371,34 +321,24 @@ describe('Persistence', function() {
         return persistence.saveFeed('http://feed2', saveFeedItems2);
       }).then(function() {
         endDate = new Date();
-        return persistence.getFeeds();
+        return persistence.getFeeds().lean();
       }).then(function(feeds) {
         assert.equal(feeds.length, 2);
         feeds = feeds.map(function(feed) {
-          feed = feed.toJSON();
-          assert.equal(feed.createdAt >= startDate, true);
-          assert.equal(feed.updatedAt >= startDate, true);
-          assert.equal(feed.createdAt <= endDate, true);
-          assert.equal(feed.updatedAt <= endDate, true);
-          feed.FeedItems.forEach(function(feedItem){
-            assert.equal(feedItem.createdAt >= startDate, true);
-            assert.equal(feedItem.updatedAt >= startDate, true);
-            assert.equal(feedItem.createdAt <= endDate, true);
-            assert.equal(feedItem.updatedAt <= endDate, true);
+          feed.items.forEach(function(feedItem){
+            assert.equal(feedItem.lastSeen >= startDate, true);
+            assert.equal(feedItem.lastSeen <= endDate, true);
             var feedUrl = feedItem.url.match(/^(http:\/\/[^\/]+)\/.*$/)[1];
             assert.equal(feedUrl, feed.url);
-            delete feedItem.createdAt;
-            delete feedItem.updatedAt;
-            delete feedItem.id;
+            delete feedItem._id;
+            delete feedItem.__v;
           });
-          delete feed.createdAt;
-          delete feed.updatedAt;
-          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
+          delete feed._id;
+          delete feed.__v;
+          feed.items.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
-        saveFeedItems1.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed1'; });
-        saveFeedItems2.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed2'; });
-        assert.deepEqual(feeds, [{url:'http://feed1', FeedItems: saveFeedItems1}, {url:'http://feed2', FeedItems: saveFeedItems2}]);
+        assert.deepEqual(feeds, [{url:'http://feed1', items: saveFeedItems1}, {url:'http://feed2', items: saveFeedItems2}]);
       });
     });
     it('should be able to update a saved feed item', function () {
@@ -419,72 +359,55 @@ describe('Persistence', function() {
         return persistence.saveFeed('http://feed2', saveFeedItems2);
       }).then(function() {
         endDate = new Date();
-        return persistence.getFeeds();
+        return persistence.getFeeds().lean();
       }).then(function(feeds) {
         assert.equal(feeds.length, 2);
         feeds = feeds.map(function(feed) {
-          feed = feed.toJSON();
-          assert.equal(feed.createdAt >= startDate, true);
-          assert.equal(feed.updatedAt >= startDate, true);
-          assert.equal(feed.createdAt <= endDate, true);
-          assert.equal(feed.updatedAt <= endDate, true);
-          feed.FeedItems.forEach(function(feedItem){
+          feed.items.forEach(function(feedItem){
             if(feedItem.url === saveFeedItems1[0].url)
               item1Id = feedItem.id;
-            assert.equal(feedItem.createdAt >= startDate, true);
-            assert.equal(feedItem.updatedAt >= startDate, true);
-            assert.equal(feedItem.createdAt <= endDate, true);
-            assert.equal(feedItem.updatedAt <= endDate, true);
+            assert.equal(feedItem.lastSeen >= startDate, true);
+            assert.equal(feedItem.lastSeen <= endDate, true);
             var feedUrl = feedItem.url.match(/^(http:\/\/[^\/]+)\/.*$/)[1];
             assert.equal(feedUrl, feed.url);
-            delete feedItem.createdAt;
             delete feedItem.updatedAt;
-            delete feedItem.id;
+            delete feedItem._id;
+            delete feedItem.__v;
           });
-          delete feed.createdAt;
-          delete feed.updatedAt;
-          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
+          delete feed._id;
+          delete feed.__v;
+          feed.items.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
-        saveFeedItems1.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed1'; });
-        saveFeedItems2.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed2'; });
-        assert.deepEqual(feeds, [{url:'http://feed1', FeedItems: saveFeedItems1}, {url:'http://feed2', FeedItems: saveFeedItems2}]);
+        assert.deepEqual(feeds, [{url:'http://feed1', items: saveFeedItems1}, {url:'http://feed2', items: saveFeedItems2}]);
         saveFeedItems1[0].title = 'Title 1-updated';
         saveFeedItems1[0].date = new Date('2015-01-01T12:34:56');
         saveFeedItems1[0].contents = 'Contents 1-updated';
         saveFeedItems1[0].url = 'http://feed1/item1-updated';
-        saveFeedItems1.forEach(function(saveFeedItem){ delete saveFeedItem.FeedUrl; });
         updateStartDate = new Date();
         return persistence.saveFeed('http://feed1', saveFeedItems1);
       }).then(function() {
         updateEndDate = new Date();
-        return persistence.getFeeds();
+        return persistence.getFeeds().lean();
       }).then(function(feeds) {
         assert.equal(feeds.length, 2);
         feeds = feeds.map(function(feed) {
-          feed = feed.toJSON();
-          assert.equal(feed.createdAt >= startDate, true);
-          assert.equal(feed.updatedAt >= startDate, true);
-          assert.equal(feed.createdAt <= endDate, true);
-          assert.equal(feed.updatedAt <= endDate, true);
-          feed.FeedItems.forEach(function(feedItem){
+          var minUpdatedAt = (feed.url === 'http://feed1' ? updateStartDate : startDate);
+          var maxUpdatedAt = (feed.url === 'http://feed1' ? updateEndDate : endDate);
+          feed.items.forEach(function(feedItem){
             var feedUrl = feedItem.url.match(/^(http:\/\/[^\/]+)\/.*$/)[1];
-            assert.equal(feedItem.createdAt >= startDate, true);
-            assert.equal(feedItem.updatedAt >= (feed.url === 'http://feed1' ? updateStartDate : startDate), true);
-            assert.equal(feedItem.createdAt <= endDate, true);
-            assert.equal(feedItem.updatedAt <= (feed.url === 'http://feed1' ? updateEndDate : endDate), true);
+            assert.equal(feedItem.lastSeen >= minUpdatedAt, true);
+            assert.equal(feedItem.lastSeen <= maxUpdatedAt, true);
             assert.equal(feedUrl, feed.url);
-            delete feedItem.createdAt;
-            delete feedItem.updatedAt;
-            delete feedItem.id;
+            delete feedItem._id;
+            delete feedItem.__v;
           });
-          delete feed.createdAt;
-          delete feed.updatedAt;
-          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
+          delete feed._id;
+          delete feed.__v;
+          feed.items.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
-        saveFeedItems1.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed1'; });
-        assert.deepEqual(feeds, [{url:'http://feed1', FeedItems: saveFeedItems1}, {url:'http://feed2', FeedItems: saveFeedItems2}]);
+        assert.deepEqual(feeds, [{url:'http://feed1', items: saveFeedItems1}, {url:'http://feed2', items: saveFeedItems2}]);
       });
     });
     it('should be able to add items to feed', function () {
@@ -505,70 +428,51 @@ describe('Persistence', function() {
         return persistence.saveFeed('http://feed2', saveFeedItems2);
       }).then(function() {
         endDate = new Date();
-        return persistence.getFeeds();
+        return persistence.getFeeds().lean();
       }).then(function(feeds) {
         assert.equal(feeds.length, 2);
         feeds = feeds.map(function(feed) {
-          feed = feed.toJSON();
-          assert.equal(feed.createdAt >= startDate, true);
-          assert.equal(feed.updatedAt >= startDate, true);
-          assert.equal(feed.createdAt <= endDate, true);
-          assert.equal(feed.updatedAt <= endDate, true);
-          feed.FeedItems.forEach(function(feedItem){
+          feed.items.forEach(function(feedItem){
             if(feedItem.url === saveFeedItems1[0].url)
               item1Id = feedItem.id;
-            assert.equal(feedItem.createdAt >= startDate, true);
-            assert.equal(feedItem.updatedAt >= startDate, true);
-            assert.equal(feedItem.createdAt <= endDate, true);
-            assert.equal(feedItem.updatedAt <= endDate, true);
+            assert.equal(feedItem.lastSeen >= startDate, true);
+            assert.equal(feedItem.lastSeen <= endDate, true);
             var feedUrl = feedItem.url.match(/^(http:\/\/[^\/]+)\/.*$/)[1];
             assert.equal(feedUrl, feed.url);
-            delete feedItem.createdAt;
-            delete feedItem.updatedAt;
-            delete feedItem.id;
+            delete feedItem._id;
+            delete feedItem.__v;
           });
-          delete feed.createdAt;
-          delete feed.updatedAt;
-          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
+          delete feed._id;
+          delete feed.__v;
+          feed.items.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
-        saveFeedItems1.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed1'; });
-        saveFeedItems2.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed2'; });
-        assert.deepEqual(feeds, [{url:'http://feed1', FeedItems: saveFeedItems1}, {url:'http://feed2', FeedItems: saveFeedItems2}]);
+        assert.deepEqual(feeds, [{url:'http://feed1', items: saveFeedItems1}, {url:'http://feed2', items: saveFeedItems2}]);
         saveFeedItems1.push({guid: 'Guid-05', title: 'Title 5', date: new Date('2014-01-05T12:34:56'), contents: 'Contents 5', url: 'http://feed1/item5'});
-        saveFeedItems1.forEach(function(saveFeedItem){ delete saveFeedItem.FeedUrl; });
         updateStartDate = new Date();
         return persistence.saveFeed('http://feed1', saveFeedItems1);
       }).then(function() {
         updateEndDate = new Date();
-        return persistence.getFeeds();
+        return persistence.getFeeds().lean();
       }).then(function(feeds) {
         assert.equal(feeds.length, 2);
         feeds = feeds.map(function(feed) {
-          feed = feed.toJSON();
-          assert.equal(feed.createdAt >= startDate, true);
-          assert.equal(feed.updatedAt >= startDate, true);
-          assert.equal(feed.createdAt <= endDate, true);
-          assert.equal(feed.updatedAt <= endDate, true);
-          feed.FeedItems.forEach(function(feedItem){
+          var minUpdatedAt = (feed.url === 'http://feed1' ? updateStartDate : startDate);
+          var maxUpdatedAt = (feed.url === 'http://feed1' ? updateEndDate : endDate);
+          feed.items.forEach(function(feedItem){
             var feedUrl = feedItem.url.match(/^(http:\/\/[^\/]+)\/.*$/)[1];
-            assert.equal(feedItem.createdAt >= (feedItem.url === saveFeedItems1[2].url ? updateStartDate : startDate), true);
-            assert.equal(feedItem.updatedAt >= (feedItem.FeedUrl === 'http://feed1' ? updateStartDate : startDate), true);
-            assert.equal(feedItem.createdAt <= (feedItem.url === saveFeedItems1[2].url ? updateEndDate : endDate), true);
-            assert.equal(feedItem.updatedAt <= (feedItem.FeedUrl === 'http://feed1' ? updateEndDate : endDate), true);
+            assert.equal(feedItem.lastSeen >= minUpdatedAt, true);
+            assert.equal(feedItem.lastSeen <= maxUpdatedAt, true);
             assert.equal(feedUrl, feed.url);
-            delete feedItem.createdAt;
-            delete feedItem.updatedAt;
-            delete feedItem.id;
+            delete feedItem._id;
+            delete feedItem.__v;
           });
-          delete feed.createdAt;
-          delete feed.updatedAt;
-          feed.FeedItems.sort(function(a, b){ return a.url.localeCompare(b.url); });
+          delete feed._id;
+          delete feed.__v;
+          feed.items.sort(function(a, b){ return a.url.localeCompare(b.url); });
           return feed;
         });
-        saveFeedItems1.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed1'; });
-        saveFeedItems2.forEach(function(saveFeedItem){ saveFeedItem.FeedUrl = 'http://feed2'; });
-        assert.deepEqual(feeds, [{url:'http://feed1', FeedItems: saveFeedItems1}, {url:'http://feed2', FeedItems: saveFeedItems2}]);
+        assert.deepEqual(feeds, [{url:'http://feed1', items: saveFeedItems1}, {url:'http://feed2', items: saveFeedItems2}]);
       });
     });
     it('should be able to read a specific saved feed item', function () {
@@ -586,23 +490,24 @@ describe('Persistence', function() {
         return persistence.saveFeed('http://feed2', saveFeedItems2);
       }).then(function() {
         endDate = new Date();
-        return persistence.getFeedItems();
-      }).then(function(feedItems){
-        var findId = feedItems.find(function(feedItem){
-          return feedItem.url === saveFeedItems1[0].url;
-        }).id;
+        return persistence.getFeeds().lean();
+      }).then(function(feeds){
+        var findId;
+        feeds.forEach(function(feed) {
+          var foundItem = feed.items.find(function(feedItem){
+            return feedItem.url === saveFeedItems1[0].url;
+          });
+          if(foundItem !== undefined)
+          findId = foundItem._id;
+        });
         return persistence.findFeedItem(findId);
       }).then(function(feedItem) {
         var endDate = new Date();
-        feedItem = feedItem.toJSON();
-        assert.equal(feedItem.createdAt >= startDate, true);
-        assert.equal(feedItem.updatedAt >= startDate, true);
-        assert.equal(feedItem.createdAt <= endDate, true);
-        assert.equal(feedItem.updatedAt <= endDate, true);
-        delete feedItem.createdAt;
-        delete feedItem.updatedAt;
-        delete feedItem.id;
-        saveFeedItems1[0].FeedUrl = 'http://feed1';
+        feedItem = feedItem.toObject();
+        assert.equal(feedItem.lastSeen >= startDate, true);
+        assert.equal(feedItem.lastSeen <= endDate, true);
+        delete feedItem._id;
+        delete feedItem.__v;
         assert.deepEqual(feedItem, saveFeedItems1[0]);
       });
     });
@@ -617,15 +522,10 @@ describe('Persistence', function() {
       ];
       return persistence.saveFeed('http://feed1', saveFeedItems1).then(function(){
         return persistence.saveFeed('http://feed2', saveFeedItems2);
-      }).then(function() {
-        return persistence.getFeedItems();
       }).then(function(feedItems){
-        var maxId = Math.max.apply(null, feedItems.map(function(feedItem) {
-          return feedItem.id
-        }));
-        return persistence.findFeedItem(maxId + 1);
+        return persistence.findFeedItem('000000000000000000000000');
       }).then(function(feedItem) {
-        assert.equal(feedItem, null);
+        assert.equal(feedItem, undefined);
       });
     });
   });

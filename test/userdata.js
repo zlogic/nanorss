@@ -1,6 +1,7 @@
 var serviceBase = require('./utils/servicebase')
 var assert = require('assert');
 var persistence = require('../lib/services/persistence');
+var persistencebase = require('./utils/persistencebase');
 var superagent = require('superagent');
 
 var baseUrl = serviceBase.baseUrl;
@@ -18,6 +19,8 @@ var prepopulate = function() {
 
 describe('Service', function() {
   serviceBase.hooks();
+
+  persistencebase.hooks();
 
   var validateDefaultUserdata = function(done){
     persistence.getUserData().then(function(user){
@@ -143,7 +146,7 @@ describe('Service', function() {
             try {
               assert.ok(err);
               assert.equal(result.status, 500);
-              assert.deepEqual(result.text, 'Validation error: Validation notEmpty on username failed');
+              assert.deepEqual(result.text, 'User validation failed: username: Path `username` is required.');
               validateDefaultUserdata(done);
             } catch(err) {done(err);}
           });
@@ -160,7 +163,7 @@ describe('Service', function() {
             try {
               assert.ok(err);
               assert.equal(result.status, 500);
-              assert.deepEqual(result.text, 'Validation error: Validation notEmpty on password failed');
+              assert.deepEqual(result.text, 'User validation failed: password: Path `password` is required.');
               validateDefaultUserdata(done);
             } catch(err) {done(err);}
           });
