@@ -1,7 +1,7 @@
 var serviceBase = require('./utils/servicebase')
 var assert = require('assert');
 var persistence = require('../lib/services/persistence');
-var persistencebase = require('./utils/persistencebase');
+var persistencehooks = require('./utils/persistencehooks');
 var superagent = require('superagent');
 var uuid = require('uuid/v4');
 
@@ -19,7 +19,7 @@ var prepopulate = function() {
 describe('Service', function() {
   serviceBase.hooks();
 
-  persistencebase.hooks();
+  persistencehooks.hooks();
 
   afterEach(function() {
     delete process.env.TOKEN_EXPIRES_DAYS;

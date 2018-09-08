@@ -1,7 +1,7 @@
 var serviceBase = require('./utils/servicebase')
 var assert = require('assert');
 var persistence = require('../lib/services/persistence');
-var persistencebase = require('./utils/persistencebase');
+var persistencehooks = require('./utils/persistencehooks');
 var superagent = require('superagent');
 
 var baseUrl = serviceBase.baseUrl;
@@ -20,7 +20,7 @@ var prepopulate = function() {
 describe('Service', function() {
   serviceBase.hooks();
 
-  persistencebase.hooks();
+  persistencehooks.hooks();
 
   var validateDefaultUserdata = function(done){
     persistence.getUserData().then(function(user){

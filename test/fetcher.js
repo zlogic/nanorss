@@ -5,7 +5,7 @@ var nock = require('nock');
 
 var createLoadFile = require('./utils/loadfile');
 var persistence = require('../lib/services/persistence');
-var persistencebase = require('./utils/persistencebase');
+var persistencehooks = require('./utils/persistencehooks');
 var logger = require('../lib/services/logger').logger;
 var pagemonitor = require('../lib/pagemonitor/fetcher');
 var feed = require('../lib/feed/fetcher');
@@ -14,7 +14,7 @@ require('./utils/logging');
 var loadFile = createLoadFile('fetcher');
 
 describe('Fetcher', function() {
-  persistencebase.hooks();
+  persistencehooks.hooks();
 
   describe('pagemonitor', function() {
     it('should poll newly added pages', function () {

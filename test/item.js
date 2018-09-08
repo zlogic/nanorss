@@ -2,7 +2,7 @@ var serviceBase = require('./utils/servicebase')
 var createLoadFile = require('./utils/loadfile');
 var assert = require('assert');
 var persistence = require('../lib/services/persistence');
-var persistencebase = require('./utils/persistencebase');
+var persistencehooks = require('./utils/persistencehooks');
 var superagent = require('superagent');
 
 var baseUrl = serviceBase.baseUrl;
@@ -29,7 +29,7 @@ var prepopulate = function() {
 describe('Items', function() {
   serviceBase.hooks();
 
-  persistencebase.hooks();
+  persistencehooks.hooks();
   
   describe('pagemonitor', function () {
     it('should be able to get an existing pagemonitor item', function (done) {

@@ -4,7 +4,7 @@ var assert = require('assert');
 
 var createLoadFile = require('./utils/loadfile');
 var persistence = require('../lib/services/persistence');
-var persistencebase = require('./utils/persistencebase');
+var persistencehooks = require('./utils/persistencehooks');
 var logger = require('../lib/services/logger').logger;
 var pagemonitor = require('../lib/pagemonitor/fetcher');
 var feed = require('../lib/feed/fetcher');
@@ -15,7 +15,7 @@ var loadFile = createLoadFile('cleanup');
 describe('Cleanup', function() {
   var oneSecond = 1 / (24 * 60 * 60);
 
-  persistencebase.hooks();
+  persistencehooks.hooks();
 
   afterEach(function() {
     delete process.env.ITEM_EXPIRE_DAYS;

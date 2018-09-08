@@ -2,7 +2,7 @@ var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
 
-var persistencebase = require('./utils/persistencebase');
+var persistencehooks = require('./utils/persistencehooks');
 var persistence = require('../lib/services/persistence');
 require('./utils/logging');
 
@@ -16,7 +16,7 @@ var loadFile = function(filename) {
 };
 
 describe('Persistence', function() {
-  persistencebase.hooks();
+  persistencehooks.hooks();
 
   describe('user', function () {
     it('should create a new user with an empty database', function () {
