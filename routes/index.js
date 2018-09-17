@@ -33,7 +33,14 @@ router.get('/pagemonitor/:id', function(req, res, next) {
       return next(error);
     }
 
-    var contents = (page.error !== undefined && page.error !== null) ? page.error : page.delta;
+    var contents;
+    if(page.error !== undefined && page.error !== null)
+      contents = page.error;
+    else if(page.delta !== undefined && page.delta !== null)
+      contents = page.delta;
+    else
+      contents = "";
+
     res.send(contents.replace(/\n/g, '<br>\n'));
   }).catch(next);
 });
