@@ -1,6 +1,5 @@
 var express = require('express');
 var persistence = require('../lib/services/persistence');
-var Promise = require('bluebird').Promise;
 var path = require('path');
 var router = express.Router();
 
@@ -10,23 +9,26 @@ router.get(['/', '/login', '/feed', '/configuration'], function(req, res, next) 
 });
 
 /* GET feed item. */
-router.get('/feeditem/:id', function(req, res, next) {
+router.get('/feeditem/:id', async function(req, res, next) {
   var id = req.params.id;
-  persistence.findFeedItem(id).then(function(feedItem){
+  try {
+    var feedItem = await persistence.findFeedItem(id);
     if(feedItem === null){
       var error = new Error('Item not found');
       error.status = 404;
       return next(error);
     }
-
     res.send(feedItem.contents);
-  }).catch(next);
+  } catch(err) {
+    next(err);
+  }
 });
 
 /* GET monitored page. */
-router.get('/pagemonitor/:id', function(req, res, next) {
+router.get('/pagemonitor/:id', async function(req, res, next) {
   var id = req.params.id;
-  persistence.findPageMonitorItem(id).then(function(page){
+  try {
+    var page = await persistence.findPageMonitorItem(id);
     if(page === null){
       var error = new Error('Item not found');
       error.status = 404;
@@ -42,7 +44,9 @@ router.get('/pagemonitor/:id', function(req, res, next) {
       contents = "";
 
     res.send(contents.replace(/\n/g, '<br>\n'));
-  }).catch(next);
+  } catch(err) {
+    next(err);
+  }
 });
 
 module.exports = router;

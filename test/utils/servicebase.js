@@ -2,6 +2,7 @@ var dbConfiguration = require('./dbconfiguration');
 var persistence = require('../../lib/services/persistence');
 var logger = require('../../lib/services/logger').logger;
 var superagent = require('superagent');
+var util = require('util');
 require('./logging');
 
 var app = require('../../app');
@@ -10,16 +11,15 @@ var http = require('http');
 var port = 3000;
 var baseUrl = "http://localhost:" + port;
 
-var authenticateUser = function(userData, callback){
-  superagent.post(baseUrl + "/oauth/token")
+var authenticateUser = async function(userData){
+  var result = await superagent.post(baseUrl + "/oauth/token")
     .send("username=" + userData.username)
     .send("password=" + userData.password)
-    .send("grant_type=password")
-    .end(function(err, result){
-      if(err) return callback(err);
-      callback(null, result.body.access_token, result);
-    });
+    .send("grant_type=password");
+  return {token: result.body.access_token, result: result};
 };
+
+var sleep = util.promisify(setTimeout);
 
 var tokenHeader = function(token){
   return {Authorization: "Bearer " + token};
@@ -54,4 +54,5 @@ var hooks = function(){
 module.exports.baseUrl = baseUrl;
 module.exports.hooks = hooks;
 module.exports.authenticateUser = authenticateUser;
+module.exports.sleep = sleep;
 module.exports.tokenHeader = tokenHeader;

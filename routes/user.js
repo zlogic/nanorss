@@ -1,7 +1,6 @@
 var express = require('express');
 var persistence = require('../lib/services/persistence');
 var logger = require('../lib/services/logger');
-var Promise = require('bluebird').Promise;
 var passport = require('passport');
 var router = express.Router();
 
@@ -9,9 +8,13 @@ var router = express.Router();
 router.use(passport.authenticate('bearer', { session: false }));
 
 /* GET home page. */
-router.get('/feed', function(req, res, next) {
-  var processPagemonitorData = persistence.getPageMonitorItems().then(function(monitoredPages){
-    var monitoredPagesItems = monitoredPages.map(function(page){
+router.get('/feed', async function(req, res, next) {
+  try {
+    var monitoredPages = persistence.getPageMonitorItems();
+    var userFeeds = persistence.getUserFeeds();
+    monitoredPages = await monitoredPages;
+    userFeeds = await userFeeds;
+    var items = monitoredPages.map(function(page){
       var pageTitle = page.title;
       return {
         sortBy: new Date(page.updatedAt).getTime(),
@@ -21,10 +24,7 @@ router.get('/feed', function(req, res, next) {
         url: page.url
       };
     });
-    return monitoredPagesItems;
-  });
-  var processFeedData = persistence.getUserFeeds().then(function(userFeeds){
-    return userFeeds.map(function(userFeed){
+    userFeeds.map(function(userFeed){
       return userFeed.Feed.FeedItems.map(function(feedItem) {
         return {
           sortBy: Math.min(new Date(feedItem.createdAt).getTime(), new Date(feedItem.date).getTime()),
@@ -34,14 +34,9 @@ router.get('/feed', function(req, res, next) {
           url: feedItem.url
         };
       });
-    }).reduce(function(a, b) {
-      return a.concat(b);
+    }).forEach(function(feedItems) {
+      items = items.concat(feedItems);
     });
-  });
-  return Promise.all([processPagemonitorData, processFeedData]).then(function(items){
-    items = items.reduce(function(a, b){
-      return a.concat(b);
-    }, []);
     items.sort(function(a, b){
       return b.sortBy - a.sortBy;
     });
@@ -49,7 +44,9 @@ router.get('/feed', function(req, res, next) {
       delete item.sortBy;
     });
     res.send(items);
-  }).catch(next);
+  } catch(err) {
+    next(err);
+  }
 });
 
 /* GET user data. */
@@ -62,15 +59,17 @@ router.get('/configuration', function(req, res, next) {
 });
 
 /* POST user data. */
-router.post('/configuration', function(req, res, next) {
-  persistence.getUserData().then(function(user){
+router.post('/configuration', async function(req, res, next) {
+  try {
+    var user = await persistence.getUserData()
     var password = req.body.password;
     for(var v in req.body)
       user.set(v, req.body[v]);
-    return user.save();
-  }).then(function(user){
+    user = await user.save();
     res.send({});
-  }).catch(next);
+  } catch(err) {
+    next(err);
+  }
 });
 
 /* Error handler */

@@ -1,14 +1,11 @@
 var fs = require('fs');
 var path = require('path');
+var util = require('util');
 
+var readFile = util.promisify(fs.readFile);
 var createLoadFile = function(dir){
-  return function(filename) {
-    return new Promise(function(resolve, reject){
-      fs.readFile(path.join(__dirname, '..', 'data', dir, filename), function(error, data){
-        if(error) return reject(error);
-        resolve(data);
-      });
-    });
+  return async function(filename) {
+    return readFile(path.join(__dirname, '..', 'data', dir, filename));
   };
 };
 
