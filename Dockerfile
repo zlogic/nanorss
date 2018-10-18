@@ -1,4 +1,4 @@
-FROM node:8-alpine as builder
+FROM node:10-alpine as builder
 
 # Create app directory
 RUN mkdir -p /usr/src/nanoRSS
@@ -31,7 +31,7 @@ RUN rm -rf \
   Procfile package-lock.json
 
 # Copy into a fresh image
-FROM node:8-alpine
+FROM node:10-alpine
 
 WORKDIR /usr/src/nanoRSS
 COPY --from=builder /usr/src/nanoRSS /usr/src/nanoRSS
