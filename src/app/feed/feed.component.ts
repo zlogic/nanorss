@@ -5,7 +5,8 @@ import { HTTPService } from '../service/http.service';
 
 @Component({
   selector: 'app-feed',
-  templateUrl: './feed.component.html'
+  templateUrl: './feed.component.html',
+  styleUrls: ['./feed.component.css']
 })
 export class FeedComponent {
   items = [];

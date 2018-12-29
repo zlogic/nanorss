@@ -1,11 +1,13 @@
 <mat-accordion multi="true">
   <mat-expansion-panel *ngFor="let item of items" (opened)="loadItem(item)">
     <mat-expansion-panel-header>
-      <mat-panel-title>{{item.title}} / {{item.origin}}</mat-panel-title>
+      <mat-panel-title class="ellipsis-container">
+        <span class="ellipsis-content">{{item.title}} / {{item.origin}}</span>
+      </mat-panel-title>
     </mat-expansion-panel-header>
     <ng-template matExpansionPanelContent>
       <mat-progress-bar *ngIf="!item.html" mode="indeterminate"></mat-progress-bar>
-      <div [innerHtml]="item.html"></div>
+      <div class="content" [innerHtml]="item.html"></div>
       <mat-action-row>
         <a [href]="item.url" i18n><button mat-button color="primary">Go to site</button></a>
       </mat-action-row>

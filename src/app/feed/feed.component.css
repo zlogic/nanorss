@@ -1,0 +1,14 @@
+/* Show ellipsis instead of wrapping text in panel title */
+.ellipsis-container {
+  overflow: hidden;
+}
+.ellipsis-content {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.content {
+  /* Allow scrolling of content */
+  overflow-y: auto;
+}
