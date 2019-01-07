@@ -62,10 +62,8 @@ describe('Items', function() {
   describe('feed', function () {
     it('should be able to get an existing feed item', async function () {
       var user = await prepopulate();
-      await Promise.all([
-        persistence.saveFeed('http://sites-site1.com', [{contents: 'Contents 1', date: new Date('2014-01-01T12:34:56')}, {contents: 'Contents 2', date: new Date('2014-01-01T12:34:57')}]),
-        persistence.saveFeed('http://updates-site2.com', [{contents: 'Contents 3'}, {contents: 'Contents 4'}])
-      ]);
+      await persistence.saveFeed('http://sites-site1.com', [{contents: 'Contents 1', date: new Date('2014-01-01T12:34:56')}, {contents: 'Contents 2', date: new Date('2014-01-01T12:34:57')}]);
+      await persistence.saveFeed('http://updates-site2.com', [{contents: 'Contents 3'}, {contents: 'Contents 4'}]);
 
       var result = await superagent.get(baseUrl + "/feeditem/1");
       assert.ok(result);

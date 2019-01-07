@@ -8,11 +8,10 @@ WORKDIR /usr/src/nanoRSS
 COPY . /usr/src/nanoRSS
 
 # Install app dependencies
-COPY package.json /usr/src/nanoRSS/
 RUN  buildDeps='git' \
   && set -x \
   && apk add --no-cache --virtual .build-deps $buildDeps \
-  && npm install \
+  && npm ci \
   && apk del .build-deps
 
 # Process resources with Webpack
