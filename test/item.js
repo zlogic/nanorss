@@ -101,6 +101,7 @@ describe('Items', function() {
       var jsDate = Date;
       var fakeDate;
       Date = function (fake) {return fakeDate;};
+      Date.now = function(fake) {return fakeDate;};
       fakeDate = new jsDate('2014-01-01T12:34:56');
       await pageMonitorItems[0].update({delta: "Item 1"});
       fakeDate = new jsDate('2015-01-01T12:34:56')
